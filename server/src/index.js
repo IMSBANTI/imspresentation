@@ -397,7 +397,7 @@ io.on('connection', (socket) => {
   // Add / Edit slides dynamically
   socket.on('add-slide', ({ roomId, slide = {} }) => {
     const room = getOrCreateRoom(roomId);
-    const newSlideId = 'slide-' + (room.slides.length + 1);
+    const newSlideId = 'slide-' + (room.slides.length + 1) + '-' + Date.now().toString(36);
     const newSlide = {
       id: newSlideId,
       title: slide.title || 'New Interactive Slide',
@@ -411,15 +411,17 @@ io.on('connection', (socket) => {
     if (slide.layout === 'poll') {
       const pollId = 'poll-' + Date.now();
       newSlide.pollId = pollId;
+      const pollData = slide.poll || {};
+      const rawOptions = pollData.options || slide.options || [
+        { text: 'Option A', votes: 0 },
+        { text: 'Option B', votes: 0 },
+        { text: 'Option C', votes: 0 },
+      ];
       room.polls[pollId] = {
         id: pollId,
         slideId: newSlideId,
-        question: slide.question || newSlide.title,
-        options: slide.options?.map(t => typeof t === 'string' ? { text: t, votes: 0 } : t) || [
-          { text: 'Option A', votes: 0 },
-          { text: 'Option B', votes: 0 },
-          { text: 'Option C', votes: 0 },
-        ],
+        question: pollData.question || slide.question || newSlide.title,
+        options: rawOptions.map(t => typeof t === 'string' ? { text: t, votes: 0 } : (t.votes !== undefined ? t : { text: t.text, votes: 0 })),
         voters: {},
         active: true,
         showResults: true,
@@ -427,18 +429,20 @@ io.on('connection', (socket) => {
     } else if (slide.layout === 'quiz') {
       const quizId = 'quiz-' + Date.now();
       newSlide.quizId = quizId;
+      const quizData = slide.quiz || {};
+      const rawOptions = quizData.options || slide.options || [
+        { text: 'Choice 1', correct: false },
+        { text: 'Choice 2 (Correct)', correct: true },
+        { text: 'Choice 3', correct: false },
+      ];
       room.quizzes[quizId] = {
         id: quizId,
         slideId: newSlideId,
-        title: slide.title || 'Quiz Question',
-        question: slide.question || newSlide.title,
-        options: slide.options || [
-          { text: 'Choice 1', correct: false },
-          { text: 'Choice 2 (Correct)', correct: true },
-          { text: 'Choice 3', correct: false },
-        ],
+        title: quizData.title || slide.title || 'Quiz Question',
+        question: quizData.question || slide.question || newSlide.title,
+        options: rawOptions.map(t => typeof t === 'string' ? { text: t, correct: false } : t),
         active: true,
-        timeLimit: slide.timeLimit || 20,
+        timeLimit: quizData.timeLimit || slide.timeLimit || 20,
         revealed: false,
         answers: {},
       };
@@ -454,6 +458,55 @@ io.on('connection', (socket) => {
       quizzes: room.quizzes
     });
     persistRooms(roomId);
+  });
+
+  // Delete / Remove slide
+  socket.on('delete-slide', ({ roomId, slideIndex, slideId }) => {
+    const room = getOrCreateRoom(roomId);
+    if (!room.slides || room.slides.length === 0) return;
+
+    let targetIdx = slideIndex;
+    if (slideId) {
+      const found = room.slides.findIndex(s => s.id === slideId);
+      if (found !== -1) targetIdx = found;
+    }
+
+    if (targetIdx >= 0 && targetIdx < room.slides.length) {
+      const removedSlide = room.slides[targetIdx];
+      // Clean up associated poll or quiz
+      if (removedSlide.pollId && room.polls[removedSlide.pollId]) {
+        delete room.polls[removedSlide.pollId];
+      }
+      if (removedSlide.quizId && room.quizzes[removedSlide.quizId]) {
+        delete room.quizzes[removedSlide.quizId];
+      }
+
+      room.slides.splice(targetIdx, 1);
+
+      // If all slides are deleted, maintain at least one default clean slide
+      if (room.slides.length === 0) {
+        room.slides.push({
+          id: 'slide-1',
+          title: 'Welcome to the Presentation',
+          subtitle: 'Click + in the slide navigator to add interactive polls and quizzes',
+          layout: 'title',
+          tag: 'WELCOME',
+        });
+      }
+
+      // Keep currentSlideIndex in valid bounds
+      if (room.currentSlideIndex >= room.slides.length) {
+        room.currentSlideIndex = Math.max(0, room.slides.length - 1);
+      }
+
+      io.to(roomId.toLowerCase()).emit('slide-list-updated', {
+        slides: room.slides,
+        currentSlideIndex: room.currentSlideIndex,
+        polls: room.polls,
+        quizzes: room.quizzes
+      });
+      persistRooms(roomId);
+    }
   });
 
   socket.on('disconnect', () => {

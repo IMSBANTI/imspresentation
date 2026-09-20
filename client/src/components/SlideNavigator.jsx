@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, BarChart2, HelpCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { Plus, BarChart2, HelpCircle, FileText, CheckCircle2, Trash2 } from 'lucide-react';
 import AddSlideModal from './AddSlideModal';
 
 export default function SlideNavigator({ 
   slides, 
   currentSlideIndex, 
   onSelectSlide, 
-  onAddSlide 
+  onAddSlide,
+  onDeleteSlide
 }) {
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -59,11 +60,35 @@ export default function SlideNavigator({
                   {index + 1}
                 </span>
 
-                <div className="flex items-center space-x-1">
-                  {getIconForLayout(slide.layout)}
-                  <span className="text-[10px] font-medium text-slate-400 uppercase">
-                    {slide.tag || slide.layout}
-                  </span>
+                <div className="flex items-center space-x-1.5">
+                  <div className="flex items-center space-x-1">
+                    {getIconForLayout(slide.layout)}
+                    <span className="text-[10px] font-medium text-slate-400 uppercase">
+                      {slide.tag || slide.layout}
+                    </span>
+                  </div>
+
+                  {onDeleteSlide && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (slides.length <= 1) {
+                          if (window.confirm("Delete this slide and reset to a clean title slide?")) {
+                            onDeleteSlide(index, slide.id);
+                          }
+                        } else {
+                          if (window.confirm(`Delete slide ${index + 1}: "${slide.title}"?`)) {
+                            onDeleteSlide(index, slide.id);
+                          }
+                        }
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                      title="Delete Slide"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
                 </div>
               </div>
 

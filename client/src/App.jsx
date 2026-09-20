@@ -182,16 +182,25 @@ export default function App() {
     }
   };
 
-  const handleAddSlide = () => {
-    const slideNumber = presentation?.slides?.length + 1 || 8;
+  const handleAddSlide = (slidePayload) => {
+    const slideNumber = (presentation?.slides?.length || 0) + 1;
+    const finalSlide = slidePayload || {
+      title: `Interactive Discussion #${slideNumber}`,
+      subtitle: 'Engage audience with live question prompt',
+      layout: 'title',
+      tag: `SLIDE ${slideNumber}`,
+    };
     socket.emit('add-slide', {
       roomId,
-      slide: {
-        title: `Interactive Discussion #${slideNumber}`,
-        subtitle: 'Engage audience with live question prompt',
-        layout: 'title',
-        tag: `SLIDE ${slideNumber}`,
-      }
+      slide: finalSlide
+    });
+  };
+
+  const handleDeleteSlide = (slideIndex, slideId) => {
+    socket.emit('delete-slide', {
+      roomId,
+      slideIndex,
+      slideId
     });
   };
 
@@ -366,6 +375,7 @@ export default function App() {
           onPrevSlide={handlePrevSlide}
           onNextSlide={handleNextSlide}
           onAddSlide={handleAddSlide}
+          onDeleteSlide={handleDeleteSlide}
           onToggleOption={handleToggleOption}
           onToggleInteraction={handleToggleInteraction}
           onPinQuestion={handlePinQuestion}

@@ -18,6 +18,7 @@ export default function PresenterStudio({
   onPrevSlide,
   onNextSlide,
   onAddSlide,
+  onDeleteSlide,
   onToggleOption,
   onToggleInteraction,
   onPinQuestion,
@@ -68,6 +69,7 @@ export default function PresenterStudio({
           currentSlideIndex={presentation.currentSlideIndex}
           onSelectSlide={onSelectSlide}
           onAddSlide={onAddSlide}
+          onDeleteSlide={onDeleteSlide}
         />
 
         {/* 2. Center Studio Canvas & Interaction Panels */}
