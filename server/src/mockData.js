@@ -183,7 +183,6 @@ export function createInitialPresentation() {
         layout: "poll",
         tag: "INTERACTIVE POLL",
         pollId: "poll-2",
-        quizId: "quiz-1",
         notes: "Demonstrate live updating bar graph on the big screen as votes pour in.",
         background: "from-slate-900 via-indigo-950 to-purple-950",
       },

@@ -383,9 +383,9 @@ export default function AudienceMobile({
               </div>
             )}
 
-            {/* LIVE POLL CARD */}
-            {activePoll && (activeSlide?.layout === 'poll' || activeSlide?.layout === 'title' || activePoll.active) && (
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-purple-900/40 to-slate-900/80 border border-purple-500/30 shadow-lg">
+            {/* LIVE POLL CARD - Dedicated strictly to Poll slides */}
+            {activeSlide?.layout === 'poll' && activePoll && (
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-purple-900/40 to-slate-900/80 border border-purple-500/30 shadow-lg animate-fadeIn">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-300 flex items-center space-x-1">
                     <BarChart2 size={11} />
@@ -432,9 +432,9 @@ export default function AudienceMobile({
               </div>
             )}
 
-            {/* LIVE QUIZ CARD */}
-            {activeQuiz && (activeSlide?.layout === 'quiz' || activeQuiz.active) && (
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-amber-950/40 to-slate-900/80 border border-amber-500/30 shadow-lg">
+            {/* LIVE QUIZ CARD - Dedicated strictly to Quiz slides */}
+            {activeSlide?.layout === 'quiz' && activeQuiz && (
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-amber-950/40 to-slate-900/80 border border-amber-500/30 shadow-lg animate-fadeIn">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-300 flex items-center space-x-1">
                     <Trophy size={11} />
