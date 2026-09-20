@@ -8,6 +8,7 @@ import PresentationOptions from './PresentationOptions';
 import RightFeaturesMenu from './RightFeaturesMenu';
 import LiveSubtitlesControl from './LiveSubtitlesControl';
 import AudienceMobile from './AudienceMobile';
+import ReportsModal from './ReportsModal';
 
 export default function PresenterStudio({
   presentation,
@@ -33,6 +34,7 @@ export default function PresenterStudio({
 }) {
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [activeFeature, setActiveFeature] = useState('qa');
+  const [showReportsModal, setShowReportsModal] = useState(false);
 
   const currentSlide = presentation.slides[presentation.currentSlideIndex] || presentation.slides[0];
   const activePoll = currentSlide?.pollId ? presentation.polls[currentSlide.pollId] : null;
@@ -147,12 +149,25 @@ export default function PresenterStudio({
         <aside className="p-4 border-l border-purple-100 bg-white hidden 2xl:flex flex-col">
           <RightFeaturesMenu
             activeFeature={activeFeature}
-            onSelectFeature={setActiveFeature}
+            onSelectFeature={(feat) => {
+              setActiveFeature(feat);
+              if (feat === 'reports') {
+                setShowReportsModal(true);
+              }
+            }}
             isListening={isListening}
             onToggleTranscription={onToggleListening}
           />
         </aside>
       </div>
+
+      {/* Reports & Analytics Export Modal */}
+      <ReportsModal
+        isOpen={showReportsModal}
+        onClose={() => setShowReportsModal(false)}
+        presentation={presentation}
+        audienceCount={audienceCount}
+      />
     </div>
   );
 }

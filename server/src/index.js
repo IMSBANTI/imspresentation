@@ -23,13 +23,49 @@ const io = new Server(httpServer, {
   }
 });
 
+import fs from 'fs';
+const dataDir = path.resolve(__dirname, '../../data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+const sessionsFilePath = path.join(dataDir, 'sessions.json');
+
 // Presentation room storage
 const rooms = new Map();
 
-function getOrCreateRoom(roomId = "claper") {
+// Load persisted rooms from disk on startup
+try {
+  if (fs.existsSync(sessionsFilePath)) {
+    const raw = fs.readFileSync(sessionsFilePath, 'utf8');
+    const parsed = JSON.parse(raw);
+    Object.entries(parsed).forEach(([id, data]) => {
+      rooms.set(id.toLowerCase(), data);
+    });
+    console.log(`Loaded ${rooms.size} persisted presentation sessions from disk.`);
+  }
+} catch (err) {
+  console.warn("Could not load persisted sessions, initializing fresh:", err.message);
+}
+
+// Debounced persist function
+let persistTimer = null;
+function persistRooms() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    try {
+      const obj = Object.fromEntries(rooms);
+      fs.writeFileSync(sessionsFilePath, JSON.stringify(obj, null, 2), 'utf8');
+    } catch (e) {
+      console.error("Error persisting sessions to disk:", e);
+    }
+  }, 1000);
+}
+
+function getOrCreateRoom(roomId = "imspresentation") {
   const normalizedId = roomId.toLowerCase();
   if (!rooms.has(normalizedId)) {
     rooms.set(normalizedId, createInitialPresentation());
+    persistRooms();
   }
   return rooms.get(normalizedId);
 }
@@ -42,6 +78,47 @@ app.get('/api/health', (req, res) => {
 app.get('/api/presentation/:roomId', (req, res) => {
   const room = getOrCreateRoom(req.params.roomId);
   res.json(room);
+});
+
+// Downloadable Report (CSV or JSON)
+app.get('/api/presentation/:roomId/export', (req, res) => {
+  const room = getOrCreateRoom(req.params.roomId);
+  const format = req.query.format || 'json';
+
+  if (format === 'csv') {
+    let csv = "CATEGORY,ITEM,DETAIL_1,DETAIL_2,VALUE\n";
+    // Questions
+    room.questions.forEach(q => {
+      const sanitizedText = `"${(q.text || '').replace(/"/g, '""')}"`;
+      csv += `Question,"${q.author}",${sanitizedText},${q.time},${q.upvotes} upvotes\n`;
+    });
+    // Polls
+    Object.values(room.polls || {}).forEach(poll => {
+      poll.options.forEach((opt, idx) => {
+        csv += `Poll,"${poll.question}","Option ${idx + 1}: ${opt.text}",-,${opt.votes || 0} votes\n`;
+      });
+    });
+    // Reactions
+    Object.entries(room.reactions || {}).forEach(([reaction, count]) => {
+      csv += `Reaction,${reaction},-,-,${count}\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${room.id}-session-report.csv"`);
+    return res.send(csv);
+  }
+
+  res.setHeader('Content-Disposition', `attachment; filename="${room.id}-session-report.json"`);
+  res.json({
+    exportedAt: new Date().toISOString(),
+    presentationTitle: room.title,
+    code: room.code,
+    totalQuestions: room.questions.length,
+    questions: room.questions,
+    polls: room.polls,
+    quizzes: room.quizzes,
+    reactions: room.reactions
+  });
 });
 
 // Socket.io Real-time Event Handlers
@@ -126,6 +203,7 @@ io.on('connection', (socket) => {
       }
 
       io.to(roomId.toLowerCase()).emit('poll-updated', poll);
+      persistRooms();
     }
   });
 
@@ -147,6 +225,7 @@ io.on('connection', (socket) => {
       };
 
       io.to(roomId.toLowerCase()).emit('quiz-updated', quiz);
+      persistRooms();
     }
   });
 
@@ -157,6 +236,7 @@ io.on('connection', (socket) => {
     if (quiz) {
       quiz.revealed = revealed !== undefined ? revealed : true;
       io.to(roomId.toLowerCase()).emit('quiz-updated', quiz);
+      persistRooms();
     }
   });
 
@@ -175,6 +255,7 @@ io.on('connection', (socket) => {
     };
     room.questions.unshift(newQuestion);
     io.to(roomId.toLowerCase()).emit('question-added', newQuestion);
+    persistRooms();
   });
 
   socket.on('upvote-question', ({ roomId, questionId, voterId }) => {
