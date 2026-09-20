@@ -28,6 +28,7 @@ import {
   initDb, 
   getUserPresentations, 
   createPresentation, 
+  deletePresentation,
   getPresentationByIdOrCode, 
   savePresentationState 
 } from './db.js';
@@ -101,6 +102,17 @@ app.post('/api/presentations', authMiddleware, async (req, res) => {
     rooms.set(saved.id.toLowerCase(), saved);
     rooms.set(saved.code.toLowerCase(), saved);
     res.status(201).json({ presentation: saved });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/presentations/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    await deletePresentation(id, req.user.id);
+    rooms.delete(id.toLowerCase());
+    res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

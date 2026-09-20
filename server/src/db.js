@@ -105,11 +105,13 @@ export async function createUser({ email, password, name }) {
     );
     const user = res.rows[0];
 
-    // Create a default presentation for the new user
-    const defaultDeck = createInitialPresentation();
+    // Create a clean personal presentation for the new user
+    const defaultDeck = createNewPresentation({
+      title: `${user.name || 'My'}'s Presentation`,
+      author: user.name || 'Presenter'
+    });
     defaultDeck.id = 'pres-' + Math.random().toString(36).substring(2, 8);
     defaultDeck.code = 'IMS-' + Math.floor(100 + Math.random() * 900);
-    defaultDeck.author = user.name;
     await createPresentation({ userId: user.id, presentation: defaultDeck });
 
     return user;
@@ -127,16 +129,29 @@ export async function createUser({ email, password, name }) {
     };
     fallbackStore.users.push(newUser);
 
-    // Create default deck for user
-    const defaultDeck = createInitialPresentation();
+    // Create a clean personal presentation for the new user
+    const defaultDeck = createNewPresentation({
+      title: `${newUser.name || 'My'}'s Presentation`,
+      author: newUser.name || 'Presenter'
+    });
     defaultDeck.id = 'pres-' + Math.random().toString(36).substring(2, 8);
     defaultDeck.code = 'IMS-' + Math.floor(100 + Math.random() * 900);
-    defaultDeck.author = newUser.name;
     defaultDeck.userId = newUser.id;
     fallbackStore.presentations.push(defaultDeck);
     persistFallback();
 
     return { id: newUser.id, email: newUser.email, name: newUser.name, created_at: newUser.created_at };
+  }
+}
+
+export async function deletePresentation(id, userId) {
+  if (isNeon && pool) {
+    await pool.query(`DELETE FROM presentations WHERE id = $1 AND user_id = $2`, [id, userId]);
+  } else {
+    fallbackStore.presentations = fallbackStore.presentations.filter(
+      p => !(p.id === id && (p.userId === userId || !p.userId))
+    );
+    persistFallback();
   }
 }
 

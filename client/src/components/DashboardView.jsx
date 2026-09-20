@@ -87,6 +87,22 @@ export default function DashboardView({
     }
   };
 
+  const handleDeletePresentation = async (presId, presTitle) => {
+    if (!window.confirm(`Are you sure you want to delete "${presTitle}"?`)) return;
+    try {
+      const token = localStorage.getItem('ims_token');
+      const res = await fetch(`/api/presentations/${presId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchPresentations();
+      }
+    } catch (e) {
+      console.error('Delete presentation error:', e);
+    }
+  };
+
   const copyJoinLink = (code) => {
     const url = `${window.location.origin}/?view=audience&room=${code}`;
     navigator.clipboard.writeText(url);
@@ -240,6 +256,14 @@ export default function DashboardView({
                       title="Copy Audience Join URL"
                     >
                       {copiedId === pres.code ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                    </button>
+
+                    <button
+                      onClick={() => handleDeletePresentation(pres.id, pres.title)}
+                      className="py-2 px-2.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 text-xs font-medium transition flex items-center cursor-pointer"
+                      title="Delete Presentation"
+                    >
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
