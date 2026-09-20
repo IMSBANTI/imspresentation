@@ -63,9 +63,9 @@ export default function AudienceMobile({
   };
 
   return (
-    <div className="w-[340px] sm:w-[380px] h-[680px] bg-slate-950 text-white rounded-[40px] p-4 shadow-2xl border-4 border-slate-800 flex flex-col justify-between overflow-hidden relative select-none">
+    <div className="w-[310px] sm:w-[325px] h-[640px] bg-slate-950 text-white rounded-[38px] p-3.5 shadow-2xl border-4 border-slate-800 flex flex-col justify-between overflow-hidden relative select-none">
       {/* Phone Notch */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-30"></div>
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3.5 bg-slate-900 rounded-full z-30"></div>
 
       {/* Top Header of Mobile Screen */}
       <div className="pt-4 pb-2 border-b border-white/10 flex items-center justify-between relative z-20">
