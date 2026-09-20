@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { QrCode, Sparkles, Trophy, Users, Pin, Mic } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { QRCodeSVG } from 'qrcode.react';
+import QRCodeModal from './QRCodeModal';
 
 export default function PresentationDisplay({
   presentation,
@@ -14,6 +16,7 @@ export default function PresentationDisplay({
   onClose,
 }) {
   const [activeReactions, setActiveReactions] = useState([]);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // Trigger floating reactions
   useEffect(() => {
@@ -91,7 +94,16 @@ export default function PresentationDisplay({
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition shadow-md cursor-pointer active:scale-95"
+              title="Show large QR code for audience"
+            >
+              <QrCode size={14} />
+              <span>Show QR Code</span>
+            </button>
+
             <div className="flex items-center space-x-2 px-4 py-1.5 rounded-full bg-purple-600/30 border border-purple-400/30 text-purple-200">
               <span className="text-xs uppercase tracking-wider text-purple-300">Room Code:</span>
               <span className="font-mono text-base font-extrabold text-white">
@@ -230,6 +242,28 @@ export default function PresentationDisplay({
             <p className="text-lg md:text-xl text-purple-200/80 max-w-2xl mx-auto leading-relaxed">
               {currentSlide?.subtitle}
             </p>
+
+            {/* Embedded QR Code on Title/Welcome Slide */}
+            {currentSlide?.layout === 'title' && (
+              <div className="pt-2 flex flex-col items-center">
+                <div 
+                  onClick={() => setShowQrModal(true)}
+                  className="p-3 bg-white rounded-2xl shadow-2xl border-2 border-purple-400/40 cursor-pointer hover:scale-105 transition"
+                  title="Click to enlarge QR code"
+                >
+                  <QRCodeSVG
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/?view=audience&room=${presentation?.code || 'IMSPRESENTATION'}` : 'https://imspresentation.onrender.com'}
+                    size={140}
+                    bgColor="#ffffff"
+                    fgColor="#1e1b4b"
+                    level="Q"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-purple-200 mt-2 flex items-center space-x-1">
+                  <span>📱 Scan with camera to join</span>
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -270,6 +304,13 @@ export default function PresentationDisplay({
           </div>
         </footer>
       )}
+
+      {/* QR Code Scan to Join Modal */}
+      <QRCodeModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        presentation={presentation}
+      />
     </div>
   );
 }

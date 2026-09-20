@@ -11,8 +11,10 @@ import {
   Calendar, 
   Sparkles, 
   Trash2, 
-  LogOut 
+  LogOut,
+  QrCode 
 } from 'lucide-react';
+import QRCodeModal from './QRCodeModal';
 
 export default function DashboardView({
   user,
@@ -28,6 +30,7 @@ export default function DashboardView({
   const [newTitle, setNewTitle] = useState('');
   const [newCode, setNewCode] = useState('');
   const [creating, setCreating] = useState(false);
+  const [qrModalPres, setQrModalPres] = useState(null);
 
   const fetchPresentations = async () => {
     try {
@@ -224,6 +227,14 @@ export default function DashboardView({
                     </button>
 
                     <button
+                      onClick={() => setQrModalPres(pres)}
+                      className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-700 hover:text-purple-700 text-xs font-medium transition flex items-center space-x-1"
+                      title="Show Audience QR Code"
+                    >
+                      <QrCode size={14} />
+                    </button>
+
+                    <button
                       onClick={() => copyJoinLink(pres.code)}
                       className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-purple-50 text-slate-700 hover:text-purple-700 text-xs font-medium transition flex items-center space-x-1"
                       title="Copy Audience Join URL"
@@ -300,6 +311,13 @@ export default function DashboardView({
           </div>
         </div>
       )}
+
+      {/* Audience Scan to Join QR Code Modal */}
+      <QRCodeModal
+        isOpen={!!qrModalPres}
+        onClose={() => setQrModalPres(null)}
+        presentation={qrModalPres}
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import RightFeaturesMenu from './RightFeaturesMenu';
 import LiveSubtitlesControl from './LiveSubtitlesControl';
 import AudienceMobile from './AudienceMobile';
 import ReportsModal from './ReportsModal';
+import QRCodeModal from './QRCodeModal';
 
 export default function PresenterStudio({
   presentation,
@@ -38,6 +39,7 @@ export default function PresenterStudio({
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [activeFeature, setActiveFeature] = useState('qa');
   const [showReportsModal, setShowReportsModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const currentSlide = presentation.slides[presentation.currentSlideIndex] || presentation.slides[0];
   const activePoll = currentSlide?.pollId ? presentation.polls[currentSlide.pollId] : null;
@@ -55,6 +57,7 @@ export default function PresenterStudio({
         user={user}
         onOpenDashboard={onOpenDashboard}
         onOpenAuthModal={onOpenAuthModal}
+        onOpenQrCode={() => setShowQrModal(true)}
       />
 
       {/* Main Studio Body */}
@@ -173,6 +176,13 @@ export default function PresenterStudio({
         onClose={() => setShowReportsModal(false)}
         presentation={presentation}
         audienceCount={audienceCount}
+      />
+
+      {/* QR Code Modal */}
+      <QRCodeModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        presentation={presentation}
       />
     </div>
   );

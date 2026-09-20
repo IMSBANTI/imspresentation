@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ExternalLink, Users, Eye, Sparkles } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Users, Eye, Sparkles, QrCode } from 'lucide-react';
 
 export default function Header({ 
   presentation, 
@@ -9,7 +9,8 @@ export default function Header({
   showMobilePreview,
   user,
   onOpenDashboard,
-  onOpenAuthModal
+  onOpenAuthModal,
+  onOpenQrCode
 }) {
   return (
     <header className="h-16 border-b border-purple-100 bg-white px-5 flex items-center justify-between shadow-xs select-none sticky top-0 z-30">
@@ -30,6 +31,17 @@ export default function Header({
         <div className="flex items-center px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold tracking-wider shadow-xs">
           #{presentation.code || "IMSPRESENTATION"}
         </div>
+
+        {onOpenQrCode && (
+          <button
+            onClick={onOpenQrCode}
+            className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-bold transition cursor-pointer"
+            title="Show Join QR Code"
+          >
+            <QrCode size={13} />
+            <span className="hidden sm:inline">QR Code</span>
+          </button>
+        )}
       </div>
 
       {/* Center: IMS Presentation Logo */}
