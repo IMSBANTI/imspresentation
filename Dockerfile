@@ -5,7 +5,7 @@ FROM node:20-alpine AS client-builder
 WORKDIR /app/client
 
 COPY client/package*.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm install --no-audit --no-fund
 
 COPY client/ ./
 RUN npm run build
@@ -20,7 +20,7 @@ ENV PORT=4000
 # Install server dependencies
 COPY server/package*.json ./server/
 WORKDIR /app/server
-RUN npm ci --only=production --no-audit --no-fund
+RUN npm install --omit=dev --no-audit --no-fund
 
 # Copy server code
 COPY server/src ./src
