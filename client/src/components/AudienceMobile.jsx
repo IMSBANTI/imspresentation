@@ -29,6 +29,7 @@ export default function AudienceMobile({
   onUpvoteQuestion,
   onSendReaction,
   voterId = 'user-mobile',
+  isSimulator = false,
 }) {
   const [activeTab, setActiveTab] = useState('interact'); // 'interact' | 'qa' | 'subtitles'
   const [inputText, setInputText] = useState('');
@@ -62,13 +63,19 @@ export default function AudienceMobile({
     onAnswerQuiz(quiz.id, optionIndex);
   };
 
+  const containerClasses = isSimulator
+    ? "w-[310px] sm:w-[325px] h-[640px] bg-slate-950 text-white rounded-[38px] p-3.5 shadow-2xl border-4 border-slate-800 flex flex-col justify-between overflow-hidden relative select-none"
+    : "w-full max-w-md min-h-screen bg-slate-950 text-white p-4 flex flex-col justify-between select-none mx-auto";
+
   return (
-    <div className="w-[310px] sm:w-[325px] h-[640px] bg-slate-950 text-white rounded-[38px] p-3.5 shadow-2xl border-4 border-slate-800 flex flex-col justify-between overflow-hidden relative select-none">
-      {/* Phone Notch */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3.5 bg-slate-900 rounded-full z-30"></div>
+    <div className={containerClasses}>
+      {/* Phone Notch (only in simulator mode) */}
+      {isSimulator && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-3.5 bg-slate-900 rounded-full z-30"></div>
+      )}
 
       {/* Top Header of Mobile Screen */}
-      <div className="pt-4 pb-2 border-b border-white/10 flex items-center justify-between relative z-20">
+      <div className={`${isSimulator ? 'pt-4' : 'pt-2'} pb-2 border-b border-white/10 flex items-center justify-between relative z-20`}>
         <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs shadow-xs">
           <span>#{presentation?.code || "CLAPER"}</span>
         </div>

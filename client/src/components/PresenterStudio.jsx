@@ -138,6 +138,7 @@ export default function PresenterStudio({
                 </span>
               </div>
               <AudienceMobile
+                isSimulator={true}
                 presentation={presentation}
                 currentSlide={currentSlide}
                 poll={activePoll}

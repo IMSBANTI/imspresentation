@@ -307,58 +307,43 @@ export default function App() {
 
   return (
     <div>
-      {/* Quick View Switcher Floating Pill */}
-      <div className="fixed bottom-3 right-4 z-50 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-2xl border border-white/20 flex items-center space-x-2 text-xs">
-        <button
-          onClick={() => {
-            if (user) {
-              setViewMode('dashboard');
-            } else {
-              setShowAuthModal(true);
-            }
-          }}
-          className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
-            viewMode === 'dashboard' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
-          }`}
-          title="Presenter Dashboard"
-        >
-          <Layers size={12} />
-          <span>Dashboard</span>
-        </button>
+      {/* Quick View Switcher Floating Pill - Only for authenticated presenters on desktop, NEVER for mobile audience */}
+      {viewMode !== 'audience' && user && (
+        <div className="hidden md:flex fixed bottom-3 right-4 z-50 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-2xl border border-white/20 items-center space-x-2 text-xs">
+          <button
+            onClick={() => setViewMode('dashboard')}
+            className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
+              viewMode === 'dashboard' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
+            }`}
+            title="Presenter Dashboard"
+          >
+            <Layers size={12} />
+            <span>Dashboard</span>
+          </button>
 
-        <button
-          onClick={() => setViewMode('studio')}
-          className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
-            viewMode === 'studio' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
-          }`}
-          title="Presenter Control Studio"
-        >
-          <Laptop size={12} />
-          <span>Studio</span>
-        </button>
+          <button
+            onClick={() => setViewMode('studio')}
+            className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
+              viewMode === 'studio' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
+            }`}
+            title="Presenter Control Studio"
+          >
+            <Laptop size={12} />
+            <span>Studio</span>
+          </button>
 
-        <button
-          onClick={() => setViewMode('present')}
-          className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
-            viewMode === 'present' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
-          }`}
-          title="Projector / Fullscreen Presentation"
-        >
-          <Tv size={12} />
-          <span>Stage</span>
-        </button>
-
-        <button
-          onClick={() => setViewMode('audience')}
-          className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
-            viewMode === 'audience' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
-          }`}
-          title="Mobile Audience View"
-        >
-          <Smartphone size={12} />
-          <span>Mobile</span>
-        </button>
-      </div>
+          <button
+            onClick={() => setViewMode('present')}
+            className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
+              viewMode === 'present' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
+            }`}
+            title="Projector / Fullscreen Presentation"
+          >
+            <Tv size={12} />
+            <span>Stage</span>
+          </button>
+        </div>
+      )}
 
       {/* VIEW: DASHBOARD */}
       {viewMode === 'dashboard' && (
@@ -421,8 +406,9 @@ export default function App() {
 
       {/* VIEW: AUDIENCE MOBILE */}
       {viewMode === 'audience' && presentation && (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-start w-full">
           <AudienceMobile
+            isSimulator={false}
             presentation={presentation}
             currentSlide={currentSlide}
             poll={activePoll}
