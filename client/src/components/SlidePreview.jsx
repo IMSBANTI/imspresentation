@@ -50,52 +50,52 @@ export default function SlidePreview({
       </div>
 
       {/* Main Slide Canvas */}
-      <div className="relative aspect-16/9 rounded-xl bg-gradient-to-br from-slate-900 via-[#181135] to-purple-950 text-white p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-md select-none">
+      <div className="relative aspect-video w-full rounded-xl bg-gradient-to-br from-slate-900 via-[#181135] to-purple-950 text-white p-4 sm:p-6 flex flex-col justify-between overflow-hidden shadow-md select-none">
         {/* Decorative ambient gradients */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Slide Category Tag & Code */}
         <div className="relative z-10 flex items-center justify-between text-xs">
-          <span className="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-purple-200 font-semibold tracking-wide uppercase text-[11px] border border-white/10">
+          <span className="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-purple-200 font-semibold tracking-wide uppercase text-[10px] sm:text-[11px] border border-white/10">
             {slide?.tag || "PRESENTATION"}
           </span>
           <div className="flex items-center space-x-2 text-white/60 text-xs">
-            <span>{typeof window !== 'undefined' ? window.location.host : 'ims'}</span>
-            <span className="px-2 py-0.5 rounded bg-purple-500/30 text-purple-200 font-mono font-bold">
+            <span className="hidden sm:inline">{typeof window !== 'undefined' ? window.location.host : 'ims'}</span>
+            <span className="px-2 py-0.5 rounded bg-purple-500/30 text-purple-200 font-mono font-bold text-[11px]">
               #{slide?.code || "IMSPRESENTATION"}
             </span>
           </div>
         </div>
 
         {/* Center Content based on layout */}
-        <div className="relative z-10 my-auto py-2">
+        <div className="relative z-10 my-auto py-1 sm:py-2">
           {/* Layout: Poll View (as shown in screenshot) */}
           {slide?.layout === 'poll' && poll ? (
             <div className="max-w-xl mx-auto w-full">
-              <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-1 drop-shadow-sm">
+              <h2 className="text-base sm:text-xl md:text-2xl font-bold text-white text-center mb-0.5 sm:mb-1 drop-shadow-sm line-clamp-2">
                 {poll.question || slide.title}
               </h2>
-              <p className="text-xs text-purple-200/80 text-center mb-6">
+              <p className="text-[11px] sm:text-xs text-purple-200/80 text-center mb-2 sm:mb-4">
                 {totalPollVotes} responses recorded in real time
               </p>
 
               {/* Bar Chart Visualizer matching screenshot purple/blue gradient */}
-              <div className="h-32 flex items-end justify-center space-x-4 md:space-x-8 px-4">
+              <div className="h-24 sm:h-32 flex items-end justify-center space-x-2 sm:space-x-4 md:space-x-6 px-2">
                 {poll.options.map((opt, idx) => {
                   const pct = calculatePercentage(opt.votes, totalPollVotes);
                   return (
-                    <div key={idx} className="flex-1 flex flex-col items-center group max-w-[90px]">
-                      <span className="text-xs font-bold text-purple-200 mb-1.5 opacity-90 transition group-hover:scale-110">
+                    <div key={idx} className="flex-1 flex flex-col items-center group max-w-[80px]">
+                      <span className="text-[10px] sm:text-xs font-bold text-purple-200 mb-1 opacity-90 transition group-hover:scale-110">
                         {pct}%
                       </span>
-                      <div className="w-full bg-white/10 rounded-t-lg h-24 flex items-end p-0.5 overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-t-lg h-16 sm:h-24 flex items-end p-0.5 overflow-hidden">
                         <div
                           className="w-full rounded-t bg-gradient-to-t from-purple-600 via-indigo-500 to-cyan-400 transition-all duration-700 shadow-lg shadow-purple-500/20"
                           style={{ height: `${Math.max(8, pct)}%` }}
                         ></div>
                       </div>
-                      <span className="text-[10px] text-white/70 mt-2 text-center line-clamp-2 leading-tight w-full font-medium">
+                      <span className="text-[9px] sm:text-[10px] text-white/70 mt-1 sm:mt-1.5 text-center line-clamp-2 leading-tight w-full font-medium">
                         {opt.text}
                       </span>
                     </div>

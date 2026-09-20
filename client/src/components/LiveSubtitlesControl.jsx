@@ -97,30 +97,30 @@ export default function LiveSubtitlesControl({
 
   return (
     <div className="p-4 rounded-2xl bg-white border border-purple-100 shadow-xs space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className={`p-2 rounded-xl ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-purple-100 text-purple-700'}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center space-x-2 min-w-0">
+          <div className={`p-2 rounded-xl shrink-0 ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-purple-100 text-purple-700'}`}>
             {isListening ? <Mic size={16} /> : <MicOff size={16} />}
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-800">
-              Live Subtitles & Transcription
+          <div className="min-w-0">
+            <h4 className="text-xs font-bold text-slate-800 truncate">
+              Live Subtitles & Voice
             </h4>
-            <p className="text-[10px] text-slate-400">
-              {isListening ? 'Streaming spoken words to presentation' : 'Microphone is inactive'}
+            <p className="text-[10px] text-slate-400 truncate">
+              {isListening ? 'Streaming spoken words' : 'Microphone inactive'}
             </p>
           </div>
         </div>
 
         <button
           onClick={onToggleListening}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition shadow-xs ${
+          className={`shrink-0 px-2.5 py-1.5 rounded-full text-xs font-semibold transition shadow-xs ${
             isListening
               ? 'bg-red-500 hover:bg-red-600 text-white'
               : 'bg-purple-600 hover:bg-purple-700 text-white'
           }`}
         >
-          {isListening ? 'Stop Mic' : 'Start Mic'}
+          {isListening ? 'Stop' : 'Start Mic'}
         </button>
       </div>
 
