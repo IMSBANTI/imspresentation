@@ -225,7 +225,18 @@ io.on('connection', (socket) => {
   let userName = 'Anonymous';
 
   socket.on('join-room', async ({ roomId = 'imspresentation', role = 'audience', name = 'Guest' }) => {
-    currentRoomId = (roomId || 'imspresentation').toLowerCase();
+    const newRoomId = (roomId || 'imspresentation').toLowerCase();
+
+    // If socket was already joined to a different room, leave it properly
+    if (currentRoomId && currentRoomId !== newRoomId) {
+      socket.leave(currentRoomId);
+      const oldRoomSockets = io.sockets.adapter.rooms.get(currentRoomId);
+      io.to(currentRoomId).emit('audience-count-updated', {
+        count: oldRoomSockets ? oldRoomSockets.size : 0
+      });
+    }
+
+    currentRoomId = newRoomId;
     userRole = role;
     userName = name;
     socket.join(currentRoomId);
@@ -267,6 +278,118 @@ io.on('connection', (socket) => {
         currentSlideIndex: room.currentSlideIndex,
         slide: room.slides[room.currentSlideIndex]
       });
+      persistRooms(roomId);
+    }
+  });
+
+  // Add new slide
+  socket.on('add-slide', ({ roomId, slide }) => {
+    const room = getOrCreateRoom(roomId);
+    if (!room.slides) room.slides = [];
+
+    const newSlideId = 'slide-' + Date.now();
+    const newSlide = {
+      id: newSlideId,
+      title: slide?.title || `Slide #${room.slides.length + 1}`,
+      subtitle: slide?.subtitle || '',
+      layout: slide?.layout || 'title',
+      tag: slide?.tag || (slide?.layout || 'content').toUpperCase(),
+      notes: slide?.notes || '',
+      background: slide?.background || 'from-purple-900 via-indigo-900 to-slate-950',
+      ...slide
+    };
+
+    if (slide?.poll) {
+      const pollId = 'poll-' + Date.now();
+      newSlide.pollId = pollId;
+      if (!room.polls) room.polls = {};
+      room.polls[pollId] = {
+        id: pollId,
+        slideId: newSlideId,
+        question: slide.poll.question || slide.title,
+        options: slide.poll.options || [
+          { text: 'Option A', votes: 0 },
+          { text: 'Option B', votes: 0 }
+        ],
+        voters: {},
+        active: true,
+        showResults: true
+      };
+    }
+
+    if (slide?.quiz) {
+      const quizId = 'quiz-' + Date.now();
+      newSlide.quizId = quizId;
+      if (!room.quizzes) room.quizzes = {};
+      room.quizzes[quizId] = {
+        id: quizId,
+        slideId: newSlideId,
+        title: slide.quiz.title || slide.title,
+        question: slide.quiz.question || slide.title,
+        options: slide.quiz.options || [
+          { text: 'Option 1', correct: true },
+          { text: 'Option 2', correct: false }
+        ],
+        active: true,
+        timeLimit: slide.quiz.timeLimit || 20,
+        revealed: false,
+        answers: {}
+      };
+    }
+
+    room.slides.push(newSlide);
+    room.currentSlideIndex = room.slides.length - 1;
+
+    io.to(roomId.toLowerCase()).emit('slide-list-updated', {
+      slides: room.slides,
+      currentSlideIndex: room.currentSlideIndex,
+      polls: room.polls,
+      quizzes: room.quizzes
+    });
+    persistRooms(roomId);
+  });
+
+  // Delete slide
+  socket.on('delete-slide', ({ roomId, slideIndex, slideId }) => {
+    const room = getOrCreateRoom(roomId);
+    if (!room.slides || room.slides.length === 0) return;
+
+    let targetIndex = slideIndex;
+    if (slideId) {
+      const found = room.slides.findIndex(s => s.id === slideId);
+      if (found >= 0) targetIndex = found;
+    }
+
+    if (targetIndex >= 0 && targetIndex < room.slides.length) {
+      const removed = room.slides.splice(targetIndex, 1)[0];
+      if (removed) {
+        if (removed.pollId && room.polls) delete room.polls[removed.pollId];
+        if (removed.quizId && room.quizzes) delete room.quizzes[removed.quizId];
+      }
+
+      if (room.slides.length === 0) {
+        room.slides.push({
+          id: 'slide-1',
+          title: room.title || 'Untitled Presentation',
+          subtitle: 'Welcome to the presentation',
+          layout: 'title',
+          tag: 'WELCOME',
+          background: 'from-purple-900 via-indigo-900 to-slate-950'
+        });
+        room.currentSlideIndex = 0;
+      } else {
+        if (room.currentSlideIndex >= room.slides.length) {
+          room.currentSlideIndex = room.slides.length - 1;
+        }
+      }
+
+      io.to(roomId.toLowerCase()).emit('slide-list-updated', {
+        slides: room.slides,
+        currentSlideIndex: room.currentSlideIndex,
+        polls: room.polls,
+        quizzes: room.quizzes
+      });
+      persistRooms(roomId);
     }
   });
 

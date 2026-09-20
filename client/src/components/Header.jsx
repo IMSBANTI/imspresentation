@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ExternalLink, Users, Eye, Sparkles, QrCode, Edit2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Users, Eye, Sparkles, QrCode, Edit2, FolderSync } from 'lucide-react';
 
 export default function Header({ 
   presentation, 
@@ -11,7 +11,9 @@ export default function Header({
   onOpenDashboard,
   onOpenAuthModal,
   onOpenQrCode,
-  onUpdateTitle
+  onUpdateTitle,
+  userPresentations = [],
+  onSwitchPresentation
 }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleText, setTitleText] = useState(presentation?.title || '');
@@ -29,15 +31,16 @@ export default function Header({
   };
 
   return (
-    <header className="h-16 border-b border-purple-100 bg-white px-5 flex items-center justify-between shadow-xs select-none sticky top-0 z-30">
-      {/* Left: Back button + Title + Code Pill */}
-      <div className="flex items-center space-x-3">
+    <header className="h-16 border-b border-purple-100 bg-white px-4 md:px-5 flex items-center justify-between shadow-xs select-none sticky top-0 z-30">
+      {/* Left: Back button + Title + Code Pill + Presentation Switcher */}
+      <div className="flex items-center space-x-2 md:space-x-3">
         <button 
           onClick={onOpenDashboard}
-          title="Back to Dashboard" 
-          className="w-8 h-8 rounded-full border border-purple-100 flex items-center justify-center text-slate-500 hover:bg-purple-50 hover:text-purple-700 transition"
+          title="Back to Presentations Dashboard" 
+          className="h-8 px-2.5 rounded-xl border border-purple-100 flex items-center justify-center text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition cursor-pointer"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={15} />
+          <span className="hidden sm:inline text-xs font-semibold ml-1">Decks</span>
         </button>
 
         {isEditingTitle ? (
@@ -57,25 +60,44 @@ export default function Header({
             title="Click to rename presentation"
             className="group flex items-center space-x-1.5 px-2 py-1 rounded-lg hover:bg-purple-50 cursor-pointer border border-transparent hover:border-purple-200 transition"
           >
-            <h1 className="font-semibold text-slate-900 text-sm md:text-base tracking-tight truncate max-w-[200px] md:max-w-md">
+            <h1 className="font-semibold text-slate-900 text-sm md:text-base tracking-tight truncate max-w-[150px] md:max-w-xs">
               {presentation?.title || "Untitled Presentation"}
             </h1>
             <Edit2 size={12} className="opacity-0 group-hover:opacity-60 text-purple-600 transition" />
           </div>
         )}
 
-        <div className="flex items-center px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold tracking-wider shadow-xs">
+        <div className="flex items-center px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold tracking-wider shadow-xs shrink-0">
           #{presentation?.code || "IMSPRESENTATION"}
         </div>
+
+        {/* Quick Switch Presentations Dropdown */}
+        {userPresentations && userPresentations.length > 1 && onSwitchPresentation && (
+          <div className="hidden lg:flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-semibold transition">
+            <FolderSync size={13} className="text-purple-600 shrink-0" />
+            <select
+              value={presentation?.id}
+              onChange={(e) => onSwitchPresentation(e.target.value)}
+              className="bg-transparent text-purple-900 text-xs font-medium focus:outline-none cursor-pointer max-w-[140px] truncate"
+              title="Switch to another presentation deck"
+            >
+              {userPresentations.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title} (#{p.code})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {onOpenQrCode && (
           <button
             onClick={onOpenQrCode}
-            className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-bold transition cursor-pointer"
+            className="hidden sm:flex items-center space-x-1 px-2.5 py-1 rounded-full bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-bold transition cursor-pointer"
             title="Show Join QR Code"
           >
             <QrCode size={13} />
-            <span className="hidden sm:inline">QR Code</span>
+            <span className="hidden md:inline">QR Code</span>
           </button>
         )}
       </div>

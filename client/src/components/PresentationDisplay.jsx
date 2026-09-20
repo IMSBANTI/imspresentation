@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { QrCode, Sparkles, Trophy, Users, Pin, Mic } from 'lucide-react';
+import { 
+  QrCode, 
+  Sparkles, 
+  Trophy, 
+  Users, 
+  Pin, 
+  Mic, 
+  ChevronLeft, 
+  ChevronRight, 
+  Layers, 
+  Laptop, 
+  Maximize2, 
+  Minimize2, 
+  FolderSync 
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCodeModal from './QRCodeModal';
@@ -14,9 +28,49 @@ export default function PresentationDisplay({
   audienceCount = 1,
   reactions = [],
   onClose,
+  onNextSlide,
+  onPrevSlide,
+  onSelectSlide,
+  onOpenDashboard,
+  userPresentations = [],
+  onSwitchPresentation,
 }) {
   const [activeReactions, setActiveReactions] = useState([]);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        if (onNextSlide) onNextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        if (onPrevSlide) onPrevSlide();
+      } else if (e.key === 'Escape') {
+        if (onClose) onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNextSlide, onPrevSlide, onClose]);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+        setIsFullscreen(false);
+      }
+    }
+  };
 
   // Trigger floating reactions
   useEffect(() => {
@@ -116,12 +170,44 @@ export default function PresentationDisplay({
               <span>{audienceCount} online</span>
             </div>
 
+            {/* Presentation Switcher Dropdown */}
+            {userPresentations && userPresentations.length > 1 && onSwitchPresentation && (
+              <div className="flex items-center space-x-1.5 bg-white/10 rounded-full px-2.5 py-1 border border-white/15 text-xs text-purple-200">
+                <FolderSync size={13} className="text-purple-300" />
+                <select
+                  value={presentation?.id}
+                  onChange={(e) => onSwitchPresentation(e.target.value)}
+                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer"
+                  title="Switch Presentation"
+                >
+                  {userPresentations.map((p) => (
+                    <option key={p.id} value={p.id} className="bg-slate-900 text-white">
+                      {p.title} (#{p.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {onOpenDashboard && (
+              <button
+                onClick={onOpenDashboard}
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs text-purple-200 transition font-medium"
+                title="Back to Dashboard"
+              >
+                <Layers size={13} />
+                <span className="hidden sm:inline">Dashboard</span>
+              </button>
+            )}
+
             {onClose && (
               <button
                 onClick={onClose}
-                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs text-white/80 transition"
+                className="flex items-center space-x-1 px-3.5 py-1.5 rounded-full bg-purple-600 hover:bg-purple-700 text-xs text-white transition font-bold shadow-sm"
+                title="Return to Studio Editor"
               >
-                Exit Stage
+                <Laptop size={13} />
+                <span>Studio</span>
               </button>
             )}
           </div>
@@ -304,6 +390,49 @@ export default function PresentationDisplay({
           </div>
         </footer>
       )}
+
+      {/* Floating Bottom Slide Navigation Bar */}
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 bg-slate-900/90 hover:bg-slate-900 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-full shadow-2xl flex items-center space-x-3 transition">
+        <button
+          onClick={onPrevSlide}
+          disabled={presentation?.currentSlideIndex === 0}
+          className={`p-1.5 rounded-full transition ${
+            presentation?.currentSlideIndex === 0
+              ? 'text-white/20 cursor-not-allowed'
+              : 'text-white/90 hover:text-white hover:bg-white/10 active:scale-95'
+          }`}
+          title="Previous Slide (Left Arrow / PageUp)"
+        >
+          <ChevronLeft size={20} />
+        </button>
+
+        <span className="text-xs font-semibold tracking-wider text-purple-200 select-none px-1">
+          Slide {(presentation?.currentSlideIndex || 0) + 1} / {presentation?.slides?.length || 1}
+        </span>
+
+        <button
+          onClick={onNextSlide}
+          disabled={presentation?.currentSlideIndex >= (presentation?.slides?.length || 1) - 1}
+          className={`p-1.5 rounded-full transition ${
+            presentation?.currentSlideIndex >= (presentation?.slides?.length || 1) - 1
+              ? 'text-white/20 cursor-not-allowed'
+              : 'text-white/90 hover:text-white hover:bg-white/10 active:scale-95'
+          }`}
+          title="Next Slide (Right Arrow / Space / PageDown)"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        <div className="w-px h-4 bg-white/20"></div>
+
+        <button
+          onClick={toggleFullscreen}
+          className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition"
+          title="Toggle Fullscreen"
+        >
+          {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+        </button>
+      </div>
 
       {/* QR Code Scan to Join Modal */}
       <QRCodeModal

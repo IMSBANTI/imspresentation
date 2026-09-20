@@ -3,6 +3,9 @@ export function createNewPresentation({ id, code, title, author }) {
   const presCode = (code || ('IMS-' + Math.floor(100 + Math.random() * 900))).toUpperCase();
   const presTitle = title || 'Untitled Presentation';
 
+  const pollId = 'poll-' + Math.random().toString(36).substring(2, 8);
+  const quizId = 'quiz-' + Math.random().toString(36).substring(2, 8);
+
   return {
     id: presId,
     code: presCode,
@@ -23,10 +26,94 @@ export function createNewPresentation({ id, code, title, author }) {
         tag: "WELCOME",
         notes: "Welcome audience and encourage everyone to scan the QR code.",
         background: "from-purple-900 via-indigo-900 to-slate-950",
+      },
+      {
+        id: "slide-2",
+        title: "Live Audience Poll",
+        subtitle: "What is your main objective for today's session?",
+        layout: "poll",
+        tag: "LIVE POLL",
+        pollId: pollId,
+        notes: "Give audience 30 seconds to vote live on their smartphones.",
+        background: "from-slate-900 via-purple-950 to-slate-900",
+      },
+      {
+        id: "slide-3",
+        title: "Key Performance & Metrics",
+        subtitle: "Real-time engagement transformed into actionable insights.",
+        layout: "stats",
+        tag: "INSIGHTS",
+        stats: [
+          { value: "4.9★", label: "Audience Satisfaction" },
+          { value: "95%", label: "Live Engagement" },
+          { value: "100%", label: "Instant Sync" },
+        ],
+        notes: "Highlight key performance numbers and session achievements.",
+        background: "from-purple-950 via-slate-900 to-indigo-950",
+      },
+      {
+        id: "slide-4",
+        title: "Interactive Challenge Quiz",
+        subtitle: "Test attendee knowledge with real-time countdown and leaderboard!",
+        layout: "quiz",
+        tag: "LIVE QUIZ",
+        quizId: quizId,
+        notes: "Run countdown timer and reveal top score leaderboard.",
+        background: "from-violet-950 via-slate-900 to-purple-900",
+      },
+      {
+        id: "slide-5",
+        title: "Open Audience Q&A Floor",
+        subtitle: "Ask questions from your phone. Upvote the best questions to spotlight them on screen.",
+        layout: "qa",
+        tag: "OPEN Q&A",
+        notes: "Pin popular audience questions directly to the main stage canvas.",
+        background: "from-slate-950 via-purple-950 to-indigo-950",
+      },
+      {
+        id: "slide-6",
+        title: "Thank You & Session Wrap-Up",
+        subtitle: "Keep your audiences engaged on every slide with imspresentation.",
+        layout: "closing",
+        tag: "CONCLUSION",
+        notes: "Collect final feedback and export session report.",
+        background: "from-purple-900 via-indigo-900 to-slate-900",
       }
     ],
-    polls: {},
-    quizzes: {},
+    polls: {
+      [pollId]: {
+        id: pollId,
+        slideId: "slide-2",
+        question: "What is your main objective for today's session?",
+        options: [
+          { text: "Learn practical techniques", votes: 0 },
+          { text: "Experience interactive tools", votes: 0 },
+          { text: "Collaborate and share ideas", votes: 0 },
+          { text: "Discover new features", votes: 0 },
+        ],
+        voters: {},
+        active: true,
+        showResults: true,
+      }
+    },
+    quizzes: {
+      [quizId]: {
+        id: quizId,
+        slideId: "slide-4",
+        title: "Interactive Challenge Quiz",
+        question: "Which feature best drives live audience interaction?",
+        options: [
+          { text: "Passive monologues", correct: false },
+          { text: "Real-time polls, quizzes & Q&A", correct: true },
+          { text: "Static PDF slides", correct: false },
+          { text: "Email surveys after the talk", correct: false },
+        ],
+        active: true,
+        timeLimit: 20,
+        revealed: false,
+        answers: {},
+      }
+    },
     questions: [],
     messages: [],
     subtitles: {

@@ -18,6 +18,23 @@ export default function App() {
   // Auth state
   const [user, setUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [userPresentations, setUserPresentations] = useState([]);
+
+  const refreshUserPresentations = async () => {
+    const token = localStorage.getItem('ims_token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/presentations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUserPresentations(data.presentations || []);
+      }
+    } catch (e) {
+      console.error('Error fetching user presentations:', e);
+    }
+  };
 
   // Check URL params for view mode and room
   useEffect(() => {
@@ -48,6 +65,7 @@ export default function App() {
         .then((data) => {
           if (data && data.user) {
             setUser(data.user);
+            refreshUserPresentations();
             // If logged in and no specific room/view requested in URL, go directly to Dashboard
             if (!view && !room) {
               setViewMode('dashboard');
@@ -301,13 +319,27 @@ export default function App() {
   };
 
   const handleLaunchStudioFromDashboard = (presId) => {
-    setRoomId(presId);
+    if (presId !== roomId) {
+      setPresentation(null);
+      setRoomId(presId);
+    }
     setViewMode('studio');
+    refreshUserPresentations();
   };
 
   const handleLaunchStageFromDashboard = (presId) => {
-    setRoomId(presId);
+    if (presId !== roomId) {
+      setPresentation(null);
+      setRoomId(presId);
+    }
     setViewMode('present');
+    refreshUserPresentations();
+  };
+
+  const handleSwitchPresentation = (presId) => {
+    if (!presId || presId === roomId) return;
+    setPresentation(null);
+    setRoomId(presId);
   };
 
   const currentSlide = presentation?.slides?.[presentation.currentSlideIndex] || presentation?.slides?.[0];
@@ -320,7 +352,10 @@ export default function App() {
       {viewMode !== 'audience' && user && (
         <div className="hidden md:flex fixed bottom-3 right-4 z-50 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-2xl border border-white/20 items-center space-x-2 text-xs">
           <button
-            onClick={() => setViewMode('dashboard')}
+            onClick={() => {
+              setViewMode('dashboard');
+              refreshUserPresentations();
+            }}
             className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
               viewMode === 'dashboard' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
             }`}
@@ -393,9 +428,14 @@ export default function App() {
           onSubmitQuestion={handleSubmitQuestion}
           onSendReaction={handleSendReaction}
           user={user}
-          onOpenDashboard={() => setViewMode('dashboard')}
+          onOpenDashboard={() => {
+            setViewMode('dashboard');
+            refreshUserPresentations();
+          }}
           onOpenAuthModal={() => setShowAuthModal(true)}
           onUpdateTitle={handleUpdateTitle}
+          userPresentations={userPresentations}
+          onSwitchPresentation={handleSwitchPresentation}
         />
       )}
 
@@ -411,6 +451,15 @@ export default function App() {
           audienceCount={audienceCount}
           reactions={reactions}
           onClose={() => setViewMode('studio')}
+          onNextSlide={handleNextSlide}
+          onPrevSlide={handlePrevSlide}
+          onSelectSlide={handleSelectSlide}
+          onOpenDashboard={() => {
+            setViewMode('dashboard');
+            refreshUserPresentations();
+          }}
+          userPresentations={userPresentations}
+          onSwitchPresentation={handleSwitchPresentation}
         />
       )}
 
