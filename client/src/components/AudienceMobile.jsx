@@ -77,7 +77,7 @@ export default function AudienceMobile({
       {/* Top Header of Mobile Screen */}
       <div className={`${isSimulator ? 'pt-4' : 'pt-2'} pb-2 border-b border-white/10 flex items-center justify-between relative z-20`}>
         <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs shadow-xs">
-          <span>#{presentation?.code || "CLAPER"}</span>
+          <span>#{presentation?.code || "IMSPRESENTATION"}</span>
         </div>
 
         <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/10 text-white/90 text-xs">

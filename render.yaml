@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: claper-presentation
+    name: imspresentation
     env: node
     plan: free
     buildCommand: npm install && npm --prefix client install && npm --prefix server install && npm --prefix client run build

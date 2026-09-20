@@ -66,11 +66,10 @@ async function getRoom(roomId = "imspresentation") {
     console.error("DB lookup error in getRoom:", e.message);
   }
 
-  // 3. Demo template ONLY for "imspresentation" or "claper"
-  if (normalizedId === "imspresentation" || normalizedId === "claper") {
+  // 3. Demo template ONLY for "imspresentation"
+  if (normalizedId === "imspresentation") {
     const demo = createInitialPresentation();
     rooms.set("imspresentation", demo);
-    rooms.set("claper", demo);
     return demo;
   }
 
@@ -90,7 +89,7 @@ function getOrCreateRoom(roomId = "imspresentation") {
     return rooms.get(normalizedId);
   }
 
-  if (normalizedId === "imspresentation" || normalizedId === "claper") {
+  if (normalizedId === "imspresentation") {
     const initial = createInitialPresentation();
     rooms.set(normalizedId, initial);
     return initial;
@@ -225,8 +224,8 @@ io.on('connection', (socket) => {
   let userRole = 'audience'; // 'presenter' | 'audience' | 'display'
   let userName = 'Anonymous';
 
-  socket.on('join-room', async ({ roomId = 'claper', role = 'audience', name = 'Guest' }) => {
-    currentRoomId = (roomId || 'claper').toLowerCase();
+  socket.on('join-room', async ({ roomId = 'imspresentation', role = 'audience', name = 'Guest' }) => {
+    currentRoomId = (roomId || 'imspresentation').toLowerCase();
     userRole = role;
     userName = name;
     socket.join(currentRoomId);
@@ -594,5 +593,5 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
-  console.log(`Claper Server running on http://localhost:${PORT}`);
+  console.log(`imspresentation Server running on http://localhost:${PORT}`);
 });

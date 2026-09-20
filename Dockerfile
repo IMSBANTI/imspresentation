@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Claper
+# Multi-stage Dockerfile for imspresentation
 
 # Stage 1: Build the client frontend
 FROM node:20-alpine AS client-builder

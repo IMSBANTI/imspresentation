@@ -49,7 +49,7 @@ export default function PresenterStudio({
 
   return (
     <div className="min-h-screen bg-[#fcfaff] text-slate-800 flex flex-col selection:bg-purple-200">
-      {/* Top Claper Header */}
+      {/* Top imspresentation Header */}
       <Header
         presentation={presentation}
         audienceCount={audienceCount}

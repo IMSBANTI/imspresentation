@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 async function runVerification() {
-  console.log("=== Starting Claper End-to-End WebSocket Verification ===");
+  console.log("=== Starting imspresentation End-to-End WebSocket Verification ===");
   const serverUrl = "http://localhost:4000";
 
   // Client 1: Presenter Studio
@@ -20,15 +20,15 @@ async function runVerification() {
     const checkAllJoined = () => {
       joinedCount++;
       if (joinedCount === 3) {
-        console.log("✓ Test 1: All 3 clients (Presenter, Projector, Audience) joined room 'claper'");
+        console.log("✓ Test 1: All 3 clients (Presenter, Projector, Audience) joined room 'imspresentation'");
         testsPassed++;
         resolve();
       }
     };
 
-    presenter.emit('join-room', { roomId: 'claper', role: 'presenter', name: 'Host' });
-    projector.emit('join-room', { roomId: 'claper', role: 'display', name: 'Projector Stage' });
-    attendee.emit('join-room', { roomId: 'claper', role: 'audience', name: 'Test Attendee' });
+    presenter.emit('join-room', { roomId: 'imspresentation', role: 'presenter', name: 'Host' });
+    projector.emit('join-room', { roomId: 'imspresentation', role: 'display', name: 'Projector Stage' });
+    attendee.emit('join-room', { roomId: 'imspresentation', role: 'audience', name: 'Test Attendee' });
 
     presenter.once('sync-state', checkAllJoined);
     projector.once('sync-state', checkAllJoined);
@@ -45,7 +45,7 @@ async function runVerification() {
       }
     });
 
-    presenter.emit('change-slide', { roomId: 'claper', slideIndex: 1 });
+    presenter.emit('change-slide', { roomId: 'imspresentation', slideIndex: 1 });
   });
 
   // 3. Live Poll Voting test
@@ -57,7 +57,7 @@ async function runVerification() {
     });
 
     attendee.emit('submit-vote', {
-      roomId: 'claper',
+      roomId: 'imspresentation',
       pollId: 'poll-1',
       optionIndex: 1,
       voterId: 'attendee-bot-1',
@@ -78,12 +78,12 @@ async function runVerification() {
         }
       });
 
-      presenter.emit('pin-question', { roomId: 'claper', questionId: newQ.id, pinned: true });
+      presenter.emit('pin-question', { roomId: 'imspresentation', questionId: newQ.id, pinned: true });
     });
 
     attendee.emit('submit-question', {
-      roomId: 'claper',
-      text: 'Can we use Claper with hybrid audiences?',
+      roomId: 'imspresentation',
+      text: 'Can we use imspresentation with hybrid audiences?',
       author: 'Test Attendee',
       isAnonymous: false
     });
@@ -100,7 +100,7 @@ async function runVerification() {
     });
 
     presenter.emit('send-subtitle', {
-      roomId: 'claper',
+      roomId: 'imspresentation',
       text: "Welcome to the live session, testing real-time speech subtitles!",
       isFinal: true,
       active: true
@@ -117,7 +117,7 @@ async function runVerification() {
       }
     });
 
-    attendee.emit('send-reaction', { roomId: 'claper', emoji: '🔥' });
+    attendee.emit('send-reaction', { roomId: 'imspresentation', emoji: '🔥' });
   });
 
   presenter.disconnect();

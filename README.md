@@ -2,7 +2,7 @@
 
 An interactive real-time presentation platform with live polls, quizzes, Q&A, and live subtitles.
 
-Inspired by the Claper interface, **imspresentation** allows presenters to host engaging slide presentations where audiences can respond, ask questions, vote, and react in real time from their phones.
+**imspresentation** allows presenters to host engaging interactive slide presentations where audiences can respond, ask questions, vote, and react in real time from their phones.
 
 ---
 

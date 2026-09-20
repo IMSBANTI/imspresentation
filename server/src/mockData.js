@@ -122,7 +122,7 @@ export function createInitialPresentation() {
       {
         id: "slide-7",
         title: "Thank You & Session Wrap-Up",
-        subtitle: "Keep your audiences engaged on every slide with Claper.",
+        subtitle: "Keep your audiences engaged on every slide with imspresentation.",
         layout: "closing",
         tag: "CONCLUSION",
         notes: "Collect final feedback and export session report.",
