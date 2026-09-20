@@ -481,6 +481,7 @@ export default function App() {
             onSubmitQuestion={handleSubmitQuestion}
             onUpvoteQuestion={handleUpvoteQuestion}
             onSendReaction={handleSendReaction}
+            voterId={'attendee-' + (socket.id || 'mobile')}
           />
         </div>
       )}
