@@ -3,31 +3,63 @@ import { socket } from './socket';
 import PresenterStudio from './components/PresenterStudio';
 import PresentationDisplay from './components/PresentationDisplay';
 import AudienceMobile from './components/AudienceMobile';
+import DashboardView from './components/DashboardView';
+import AuthModal from './components/AuthModal';
 import { Laptop, Tv, Smartphone, Layers } from 'lucide-react';
 
 export default function App() {
-  const [viewMode, setViewMode] = useState('studio'); // 'studio' | 'present' | 'audience'
+  const [viewMode, setViewMode] = useState('studio'); // 'dashboard' | 'studio' | 'present' | 'audience'
   const [presentation, setPresentation] = useState(null);
   const [audienceCount, setAudienceCount] = useState(24);
   const [reactions, setReactions] = useState([]);
   const [isListening, setIsListening] = useState(false);
-  const roomId = 'imspresentation';
+  const [roomId, setRoomId] = useState('imspresentation');
+  
+  // Auth state
+  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Check URL params for view mode
+  // Check URL params for view mode and room
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
-    if (view && ['studio', 'present', 'audience'].includes(view)) {
+    const room = params.get('room');
+
+    if (room) {
+      setRoomId(room);
+    }
+    if (view && ['dashboard', 'studio', 'present', 'audience'].includes(view)) {
       setViewMode(view);
+    }
+  }, []);
+
+  // Check user token on mount
+  useEffect(() => {
+    const token = localStorage.getItem('ims_token');
+    if (token) {
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data && data.user) {
+            setUser(data.user);
+          } else {
+            localStorage.removeItem('ims_token');
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
   // Connect to room via Socket.io
   useEffect(() => {
+    if (!roomId) return;
+
     socket.emit('join-room', {
       roomId,
       role: viewMode === 'present' ? 'display' : (viewMode === 'audience' ? 'audience' : 'presenter'),
-      name: viewMode === 'audience' ? 'Mobile Guest' : 'Host'
+      name: user?.name || (viewMode === 'audience' ? 'Mobile Guest' : 'Host')
     });
 
     socket.on('sync-state', (state) => {
@@ -117,7 +149,7 @@ export default function App() {
       socket.off('subtitles-updated');
       socket.off('reaction-burst');
     };
-  }, [viewMode]);
+  }, [roomId, viewMode]);
 
   // Actions
   const handleSelectSlide = (index) => {
@@ -222,26 +254,47 @@ export default function App() {
     socket.emit('toggle-subtitles', { roomId, active: nextState });
   };
 
-  if (!presentation) {
-    return (
-      <div className="min-h-screen bg-[#fcfaff] flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-3 text-purple-700">
-          <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="font-semibold text-sm">Connecting to Claper Studio...</span>
-        </div>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('ims_token');
+    setUser(null);
+    setViewMode('studio');
+  };
 
-  const currentSlide = presentation.slides[presentation.currentSlideIndex] || presentation.slides[0];
-  const activePoll = currentSlide?.pollId ? presentation.polls[currentSlide.pollId] : null;
-  const activeQuiz = currentSlide?.quizId ? presentation.quizzes[currentSlide.quizId] : null;
+  const handleLaunchStudioFromDashboard = (presId) => {
+    setRoomId(presId);
+    setViewMode('studio');
+  };
+
+  const handleLaunchStageFromDashboard = (presId) => {
+    setRoomId(presId);
+    setViewMode('present');
+  };
+
+  const currentSlide = presentation?.slides?.[presentation.currentSlideIndex] || presentation?.slides?.[0];
+  const activePoll = currentSlide?.pollId ? presentation?.polls?.[currentSlide.pollId] : null;
+  const activeQuiz = currentSlide?.quizId ? presentation?.quizzes?.[currentSlide.quizId] : null;
 
   return (
     <div>
-      {/* Quick View Switcher Floating Pill (for pairing & live testing) */}
+      {/* Quick View Switcher Floating Pill */}
       <div className="fixed bottom-3 right-4 z-50 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1.5 rounded-full shadow-2xl border border-white/20 flex items-center space-x-2 text-xs">
-        <span className="text-[10px] uppercase font-bold text-purple-400">View:</span>
+        <button
+          onClick={() => {
+            if (user) {
+              setViewMode('dashboard');
+            } else {
+              setShowAuthModal(true);
+            }
+          }}
+          className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
+            viewMode === 'dashboard' ? 'bg-purple-600 text-white font-bold' : 'text-white/70 hover:text-white'
+          }`}
+          title="Presenter Dashboard"
+        >
+          <Layers size={12} />
+          <span>Dashboard</span>
+        </button>
+
         <button
           onClick={() => setViewMode('studio')}
           className={`flex items-center space-x-1 px-2.5 py-1 rounded-full transition ${
@@ -261,7 +314,7 @@ export default function App() {
           title="Projector / Fullscreen Presentation"
         >
           <Tv size={12} />
-          <span>Stage Display</span>
+          <span>Stage</span>
         </button>
 
         <button
@@ -272,12 +325,26 @@ export default function App() {
           title="Mobile Audience View"
         >
           <Smartphone size={12} />
-          <span>Audience Mobile</span>
+          <span>Mobile</span>
         </button>
       </div>
 
-      {/* RENDER VIEW */}
-      {viewMode === 'studio' && (
+      {/* VIEW: DASHBOARD */}
+      {viewMode === 'dashboard' && (
+        <DashboardView
+          user={user}
+          onLogout={handleLogout}
+          onOpenStudio={handleLaunchStudioFromDashboard}
+          onOpenStage={handleLaunchStageFromDashboard}
+          onOpenJoin={(code) => {
+            setRoomId(code);
+            setViewMode('audience');
+          }}
+        />
+      )}
+
+      {/* VIEW: STUDIO */}
+      {viewMode === 'studio' && presentation && (
         <PresenterStudio
           presentation={presentation}
           audienceCount={audienceCount}
@@ -299,10 +366,14 @@ export default function App() {
           onAnswerQuiz={handleAnswerQuiz}
           onSubmitQuestion={handleSubmitQuestion}
           onSendReaction={handleSendReaction}
+          user={user}
+          onOpenDashboard={() => setViewMode('dashboard')}
+          onOpenAuthModal={() => setShowAuthModal(true)}
         />
       )}
 
-      {viewMode === 'present' && (
+      {/* VIEW: PRESENT STAGE */}
+      {viewMode === 'present' && presentation && (
         <PresentationDisplay
           presentation={presentation}
           currentSlide={currentSlide}
@@ -316,7 +387,8 @@ export default function App() {
         />
       )}
 
-      {viewMode === 'audience' && (
+      {/* VIEW: AUDIENCE MOBILE */}
+      {viewMode === 'audience' && presentation && (
         <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
           <AudienceMobile
             presentation={presentation}
@@ -335,6 +407,16 @@ export default function App() {
           />
         </div>
       )}
+
+      {/* Auth Modal (Sign In / Register) */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={(authenticatedUser) => {
+          setUser(authenticatedUser);
+          setViewMode('dashboard');
+        }}
+      />
     </div>
   );
 }

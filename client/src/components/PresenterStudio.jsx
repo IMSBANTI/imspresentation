@@ -31,6 +31,9 @@ export default function PresenterStudio({
   onAnswerQuiz,
   onSubmitQuestion,
   onSendReaction,
+  user,
+  onOpenDashboard,
+  onOpenAuthModal,
 }) {
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [activeFeature, setActiveFeature] = useState('qa');
@@ -49,6 +52,9 @@ export default function PresenterStudio({
         onOpenPresentation={onOpenPresentation}
         onToggleMobilePreview={() => setShowMobilePreview(!showMobilePreview)}
         showMobilePreview={showMobilePreview}
+        user={user}
+        onOpenDashboard={onOpenDashboard}
+        onOpenAuthModal={onOpenAuthModal}
       />
 
       {/* Main Studio Body */}

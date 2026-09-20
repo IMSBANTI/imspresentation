@@ -24,50 +24,48 @@ const io = new Server(httpServer, {
 });
 
 import fs from 'fs';
-const dataDir = path.resolve(__dirname, '../../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-const sessionsFilePath = path.join(dataDir, 'sessions.json');
+import { 
+  initDb, 
+  getUserPresentations, 
+  createPresentation, 
+  getPresentationByIdOrCode, 
+  savePresentationState 
+} from './db.js';
+import { 
+  handleRegister, 
+  handleLogin, 
+  handleGetMe, 
+  authMiddleware 
+} from './auth.js';
 
-// Presentation room storage
+// Initialize Database (Neon PostgreSQL or local fallback)
+initDb().catch(console.error);
+
+// Presentation room cache
 const rooms = new Map();
-
-// Load persisted rooms from disk on startup
-try {
-  if (fs.existsSync(sessionsFilePath)) {
-    const raw = fs.readFileSync(sessionsFilePath, 'utf8');
-    const parsed = JSON.parse(raw);
-    Object.entries(parsed).forEach(([id, data]) => {
-      rooms.set(id.toLowerCase(), data);
-    });
-    console.log(`Loaded ${rooms.size} persisted presentation sessions from disk.`);
-  }
-} catch (err) {
-  console.warn("Could not load persisted sessions, initializing fresh:", err.message);
-}
-
-// Debounced persist function
-let persistTimer = null;
-function persistRooms() {
-  clearTimeout(persistTimer);
-  persistTimer = setTimeout(() => {
-    try {
-      const obj = Object.fromEntries(rooms);
-      fs.writeFileSync(sessionsFilePath, JSON.stringify(obj, null, 2), 'utf8');
-    } catch (e) {
-      console.error("Error persisting sessions to disk:", e);
-    }
-  }, 1000);
-}
 
 function getOrCreateRoom(roomId = "imspresentation") {
   const normalizedId = roomId.toLowerCase();
-  if (!rooms.has(normalizedId)) {
-    rooms.set(normalizedId, createInitialPresentation());
-    persistRooms();
+  if (rooms.has(normalizedId)) {
+    return rooms.get(normalizedId);
   }
-  return rooms.get(normalizedId);
+
+  // Create initial or retrieve
+  const initial = createInitialPresentation();
+  if (normalizedId !== "imspresentation" && normalizedId !== "claper") {
+    initial.id = normalizedId;
+    initial.code = normalizedId.toUpperCase();
+  }
+  rooms.set(normalizedId, initial);
+  return initial;
+}
+
+function persistRooms(roomId) {
+  if (!roomId) return;
+  const room = rooms.get(roomId.toLowerCase());
+  if (room) {
+    savePresentationState(room.id, room);
+  }
 }
 
 // REST Endpoints
@@ -75,8 +73,53 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/presentation/:roomId', (req, res) => {
-  const room = getOrCreateRoom(req.params.roomId);
+// Auth Routes
+app.post('/api/auth/register', handleRegister);
+app.post('/api/auth/login', handleLogin);
+app.get('/api/auth/me', authMiddleware, handleGetMe);
+
+// User Presentations Dashboard Routes
+app.get('/api/presentations', authMiddleware, async (req, res) => {
+  try {
+    const list = await getUserPresentations(req.user.id);
+    res.json({ presentations: list });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/presentations', authMiddleware, async (req, res) => {
+  try {
+    const { title, code } = req.body;
+    const newDeck = createInitialPresentation();
+    newDeck.id = 'pres-' + Math.random().toString(36).substring(2, 9);
+    newDeck.code = (code || ('IMS-' + Math.floor(100 + Math.random() * 900))).toUpperCase();
+    newDeck.title = title || 'Untitled Presentation';
+    newDeck.author = req.user.name || 'Presenter';
+    newDeck.slides[0].title = newDeck.title;
+
+    const saved = await createPresentation({ userId: req.user.id, presentation: newDeck });
+    rooms.set(saved.id.toLowerCase(), saved);
+    rooms.set(saved.code.toLowerCase(), saved);
+    res.status(201).json({ presentation: saved });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/presentation/:roomId', async (req, res) => {
+  const idOrCode = req.params.roomId;
+  let room = rooms.get(idOrCode.toLowerCase());
+  if (!room) {
+    const fromDb = await getPresentationByIdOrCode(idOrCode);
+    if (fromDb) {
+      room = fromDb;
+      rooms.set(room.id.toLowerCase(), room);
+      rooms.set(room.code.toLowerCase(), room);
+    } else {
+      room = getOrCreateRoom(idOrCode);
+    }
+  }
   res.json(room);
 });
 

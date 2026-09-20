@@ -70,5 +70,19 @@ docker compose up -d --build
 
 ---
 
+## 🗄️ Neon Serverless PostgreSQL Setup
+
+To store all presenter accounts, slide decks, questions, and voting data in **Neon**:
+
+1. Create a free serverless Postgres database at [neon.tech](https://neon.tech).
+2. Copy your connection string (`postgresql://username:password@ep-xyz.neon.tech/neondb?sslmode=require`).
+3. Set the environment variable `DATABASE_URL` in your hosting provider (e.g. Render Dashboard $\rightarrow$ Environment Variables) or in a `.env` file:
+   ```bash
+   DATABASE_URL="postgresql://username:password@ep-xyz.neon.tech/neondb?sslmode=require"
+   ```
+4. The server automatically initializes and manages all tables (`users`, `presentations`) on startup!
+
+---
+
 ## 📄 License
 MIT

@@ -6,13 +6,17 @@ export default function Header({
   audienceCount, 
   onOpenPresentation, 
   onToggleMobilePreview,
-  showMobilePreview 
+  showMobilePreview,
+  user,
+  onOpenDashboard,
+  onOpenAuthModal
 }) {
   return (
     <header className="h-16 border-b border-purple-100 bg-white px-5 flex items-center justify-between shadow-xs select-none sticky top-0 z-30">
       {/* Left: Back button + Title + Code Pill */}
       <div className="flex items-center space-x-3">
         <button 
+          onClick={onOpenDashboard}
           title="Back to Dashboard" 
           className="w-8 h-8 rounded-full border border-purple-100 flex items-center justify-center text-slate-500 hover:bg-purple-50 hover:text-purple-700 transition"
         >
@@ -29,7 +33,11 @@ export default function Header({
       </div>
 
       {/* Center: IMS Presentation Logo */}
-      <div className="flex items-center space-x-2">
+      <div 
+        onClick={onOpenDashboard}
+        className="flex items-center space-x-2 cursor-pointer"
+        title="Go to Dashboard"
+      >
         <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-sm font-black text-xs">
           IMS
         </div>
@@ -63,6 +71,27 @@ export default function Header({
           <ExternalLink size={14} />
         </button>
 
+        {/* User Account / Sign In */}
+        {user ? (
+          <button
+            onClick={onOpenDashboard}
+            className="flex items-center space-x-2 pl-2 pr-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-semibold hover:bg-purple-100 transition"
+            title="My Presentations Dashboard"
+          >
+            <div className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px]">
+              {user.name ? user.name[0] : 'U'}
+            </div>
+            <span className="hidden sm:inline">{user.name || 'Dashboard'}</span>
+          </button>
+        ) : (
+          <button
+            onClick={onOpenAuthModal}
+            className="px-3.5 py-1.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs transition"
+          >
+            Sign In
+          </button>
+        )}
+
         {/* Live Audience & Reaction Stats */}
         <div className="flex items-center space-x-2 pl-2 border-l border-slate-200 text-xs font-medium text-slate-600">
           <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -70,9 +99,6 @@ export default function Header({
             <Users size={13} />
             <span>{audienceCount} online</span>
           </div>
-          <span className="text-slate-400 font-normal hidden lg:inline">
-            {(presentation.reactions?.clap || 0) + (presentation.reactions?.heart || 0) + (presentation.reactions?.fire || 0) + 1200} reactions
-          </span>
         </div>
       </div>
     </header>
