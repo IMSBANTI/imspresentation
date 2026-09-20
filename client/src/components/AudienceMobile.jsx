@@ -22,7 +22,7 @@ export default function AudienceMobile({
   questions = [],
   messages = [],
   subtitles,
-  audienceCount = 1216,
+  audienceCount = 1,
   onVote,
   onAnswerQuiz,
   onSubmitQuestion,

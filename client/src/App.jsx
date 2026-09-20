@@ -10,7 +10,7 @@ import { Laptop, Tv, Smartphone, Layers } from 'lucide-react';
 export default function App() {
   const [viewMode, setViewMode] = useState('studio'); // 'dashboard' | 'studio' | 'present' | 'audience'
   const [presentation, setPresentation] = useState(null);
-  const [audienceCount, setAudienceCount] = useState(24);
+  const [audienceCount, setAudienceCount] = useState(1);
   const [reactions, setReactions] = useState([]);
   const [isListening, setIsListening] = useState(false);
   const [roomId, setRoomId] = useState('imspresentation');
@@ -67,7 +67,7 @@ export default function App() {
     });
 
     socket.on('audience-count-updated', ({ count }) => {
-      setAudienceCount(count + 23); // realistic audience base + actual connections
+      setAudienceCount(count || 1); // exact live connected participant count
     });
 
     socket.on('slide-changed', ({ currentSlideIndex }) => {

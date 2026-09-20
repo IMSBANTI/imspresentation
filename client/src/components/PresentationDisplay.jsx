@@ -11,7 +11,7 @@ export default function PresentationDisplay({
   quiz,
   questions = [],
   subtitles,
-  audienceCount = 1216,
+  audienceCount = 1,
   reactions = [],
   onClose,
 }) {
