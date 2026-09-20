@@ -78,15 +78,15 @@ export default function PresentationDisplay({
       {presentation?.options?.showInstructionsToJoin && (
         <header className="px-8 py-4 flex items-center justify-between border-b border-white/10 bg-black/30 backdrop-blur-md relative z-30">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-sm font-bold">
-              C
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-sm font-black text-xs">
+              IMS
             </div>
             <div>
               <span className="text-xs text-purple-300 font-semibold uppercase tracking-wider block">
                 Join from your phone
               </span>
               <span className="text-sm font-medium text-white/90">
-                Go to <strong className="text-white underline">claper.app/join</strong>
+                Go to <strong className="text-white underline">{typeof window !== 'undefined' ? window.location.host : 'your-site'}</strong>
               </span>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function PresentationDisplay({
             <div className="flex items-center space-x-2 px-4 py-1.5 rounded-full bg-purple-600/30 border border-purple-400/30 text-purple-200">
               <span className="text-xs uppercase tracking-wider text-purple-300">Room Code:</span>
               <span className="font-mono text-base font-extrabold text-white">
-                #{presentation?.code || "CLAPER"}
+                #{presentation?.code || "IMSPRESENTATION"}
               </span>
             </div>
 

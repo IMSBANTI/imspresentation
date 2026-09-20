@@ -61,9 +61,9 @@ export default function SlidePreview({
             {slide?.tag || "PRESENTATION"}
           </span>
           <div className="flex items-center space-x-2 text-white/60 text-xs">
-            <span>claper.app/join</span>
+            <span>{typeof window !== 'undefined' ? window.location.host : 'ims'}</span>
             <span className="px-2 py-0.5 rounded bg-purple-500/30 text-purple-200 font-mono font-bold">
-              #CLAPER
+              #{slide?.code || "IMSPRESENTATION"}
             </span>
           </div>
         </div>
