@@ -153,6 +153,10 @@ export default function App() {
       setPresentation((prev) => prev ? { ...prev, subtitles } : prev);
     });
 
+    socket.on('presentation-title-updated', ({ title }) => {
+      setPresentation((prev) => prev ? { ...prev, title } : prev);
+    });
+
     socket.on('reaction-burst', (reaction) => {
       setReactions((prev) => [...prev, reaction]);
     });
@@ -169,6 +173,7 @@ export default function App() {
       socket.off('question-updated');
       socket.off('questions-synced');
       socket.off('subtitles-updated');
+      socket.off('presentation-title-updated');
       socket.off('reaction-burst');
     };
   }, [roomId, viewMode]);
@@ -285,6 +290,10 @@ export default function App() {
     socket.emit('toggle-subtitles', { roomId, active: nextState });
   };
 
+  const handleUpdateTitle = (title) => {
+    socket.emit('update-presentation-title', { roomId, title });
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('ims_token');
     setUser(null);
@@ -386,6 +395,7 @@ export default function App() {
           user={user}
           onOpenDashboard={() => setViewMode('dashboard')}
           onOpenAuthModal={() => setShowAuthModal(true)}
+          onUpdateTitle={handleUpdateTitle}
         />
       )}
 

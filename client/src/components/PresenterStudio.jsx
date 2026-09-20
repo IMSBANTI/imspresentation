@@ -36,6 +36,7 @@ export default function PresenterStudio({
   user,
   onOpenDashboard,
   onOpenAuthModal,
+  onUpdateTitle,
 }) {
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [activeFeature, setActiveFeature] = useState('qa');
@@ -59,6 +60,7 @@ export default function PresenterStudio({
         onOpenDashboard={onOpenDashboard}
         onOpenAuthModal={onOpenAuthModal}
         onOpenQrCode={() => setShowQrModal(true)}
+        onUpdateTitle={onUpdateTitle}
       />
 
       {/* Main Studio Body */}

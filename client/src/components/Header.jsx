@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, ExternalLink, Users, Eye, Sparkles, QrCode } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, ExternalLink, Users, Eye, Sparkles, QrCode, Edit2 } from 'lucide-react';
 
 export default function Header({ 
   presentation, 
@@ -10,8 +10,24 @@ export default function Header({
   user,
   onOpenDashboard,
   onOpenAuthModal,
-  onOpenQrCode
+  onOpenQrCode,
+  onUpdateTitle
 }) {
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleText, setTitleText] = useState(presentation?.title || '');
+
+  useEffect(() => {
+    setTitleText(presentation?.title || '');
+  }, [presentation?.title]);
+
+  const handleTitleSubmit = (e) => {
+    if (e) e.preventDefault();
+    setIsEditingTitle(false);
+    if (titleText.trim() && titleText.trim() !== presentation?.title && onUpdateTitle) {
+      onUpdateTitle(titleText.trim());
+    }
+  };
+
   return (
     <header className="h-16 border-b border-purple-100 bg-white px-5 flex items-center justify-between shadow-xs select-none sticky top-0 z-30">
       {/* Left: Back button + Title + Code Pill */}
@@ -24,12 +40,32 @@ export default function Header({
           <ArrowLeft size={16} />
         </button>
 
-        <h1 className="font-semibold text-slate-900 text-sm md:text-base tracking-tight truncate max-w-[200px] md:max-w-md">
-          {presentation.title || "How to Craft Good Presentation"}
-        </h1>
+        {isEditingTitle ? (
+          <form onSubmit={handleTitleSubmit} className="flex items-center">
+            <input
+              type="text"
+              autoFocus
+              value={titleText}
+              onChange={(e) => setTitleText(e.target.value)}
+              onBlur={handleTitleSubmit}
+              className="px-2.5 py-1 border border-purple-400 rounded-lg text-sm font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-purple-500 bg-purple-50/60"
+            />
+          </form>
+        ) : (
+          <div 
+            onClick={() => setIsEditingTitle(true)}
+            title="Click to rename presentation"
+            className="group flex items-center space-x-1.5 px-2 py-1 rounded-lg hover:bg-purple-50 cursor-pointer border border-transparent hover:border-purple-200 transition"
+          >
+            <h1 className="font-semibold text-slate-900 text-sm md:text-base tracking-tight truncate max-w-[200px] md:max-w-md">
+              {presentation?.title || "Untitled Presentation"}
+            </h1>
+            <Edit2 size={12} className="opacity-0 group-hover:opacity-60 text-purple-600 transition" />
+          </div>
+        )}
 
         <div className="flex items-center px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold tracking-wider shadow-xs">
-          #{presentation.code || "IMSPRESENTATION"}
+          #{presentation?.code || "IMSPRESENTATION"}
         </div>
 
         {onOpenQrCode && (

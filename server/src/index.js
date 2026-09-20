@@ -45,20 +45,64 @@ initDb().catch(console.error);
 // Presentation room cache
 const rooms = new Map();
 
-function getOrCreateRoom(roomId = "imspresentation") {
+async function getRoom(roomId = "imspresentation") {
+  if (!roomId) roomId = "imspresentation";
   const normalizedId = roomId.toLowerCase();
+
+  // 1. Check in-memory cache
   if (rooms.has(normalizedId)) {
     return rooms.get(normalizedId);
   }
 
-  // Create initial or retrieve
-  const initial = createInitialPresentation();
-  if (normalizedId !== "imspresentation" && normalizedId !== "claper") {
-    initial.id = normalizedId;
-    initial.code = normalizedId.toUpperCase();
+  // 2. Query Database (Neon or fallback)
+  try {
+    const fromDb = await getPresentationByIdOrCode(normalizedId);
+    if (fromDb) {
+      rooms.set(fromDb.id.toLowerCase(), fromDb);
+      if (fromDb.code) rooms.set(fromDb.code.toLowerCase(), fromDb);
+      return fromDb;
+    }
+  } catch (e) {
+    console.error("DB lookup error in getRoom:", e.message);
   }
-  rooms.set(normalizedId, initial);
-  return initial;
+
+  // 3. Demo template ONLY for "imspresentation" or "claper"
+  if (normalizedId === "imspresentation" || normalizedId === "claper") {
+    const demo = createInitialPresentation();
+    rooms.set("imspresentation", demo);
+    rooms.set("claper", demo);
+    return demo;
+  }
+
+  // 4. Default fresh presentation with the requested code
+  const fresh = createNewPresentation({
+    id: normalizedId,
+    code: normalizedId.toUpperCase(),
+    title: 'New Presentation'
+  });
+  rooms.set(normalizedId, fresh);
+  return fresh;
+}
+
+function getOrCreateRoom(roomId = "imspresentation") {
+  const normalizedId = (roomId || "imspresentation").toLowerCase();
+  if (rooms.has(normalizedId)) {
+    return rooms.get(normalizedId);
+  }
+
+  if (normalizedId === "imspresentation" || normalizedId === "claper") {
+    const initial = createInitialPresentation();
+    rooms.set(normalizedId, initial);
+    return initial;
+  }
+
+  const fresh = createNewPresentation({
+    id: normalizedId,
+    code: normalizedId.toUpperCase(),
+    title: 'New Presentation'
+  });
+  rooms.set(normalizedId, fresh);
+  return fresh;
 }
 
 function persistRooms(roomId) {
@@ -181,13 +225,13 @@ io.on('connection', (socket) => {
   let userRole = 'audience'; // 'presenter' | 'audience' | 'display'
   let userName = 'Anonymous';
 
-  socket.on('join-room', ({ roomId = 'claper', role = 'audience', name = 'Guest' }) => {
-    currentRoomId = roomId.toLowerCase();
+  socket.on('join-room', async ({ roomId = 'claper', role = 'audience', name = 'Guest' }) => {
+    currentRoomId = (roomId || 'claper').toLowerCase();
     userRole = role;
     userName = name;
     socket.join(currentRoomId);
 
-    const room = getOrCreateRoom(currentRoomId);
+    const room = await getRoom(currentRoomId);
 
     // Broadcast updated presence count
     const roomSockets = io.sockets.adapter.rooms.get(currentRoomId);
@@ -201,6 +245,18 @@ io.on('connection', (socket) => {
       count: participantCount,
       joinedUser: { name: userName, role: userRole }
     });
+  });
+
+  // Update presentation title
+  socket.on('update-presentation-title', ({ roomId, title }) => {
+    if (!title || !title.trim()) return;
+    const room = getOrCreateRoom(roomId);
+    room.title = title.trim();
+    if (room.slides && room.slides[0] && room.slides[0].layout === 'title') {
+      room.slides[0].title = title.trim();
+    }
+    io.to((roomId || '').toLowerCase()).emit('presentation-title-updated', { title: room.title });
+    persistRooms(roomId);
   });
 
   // Slide navigation
