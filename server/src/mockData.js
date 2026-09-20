@@ -1,3 +1,48 @@
+export function createNewPresentation({ id, code, title, author }) {
+  const presId = id || ('pres-' + Math.random().toString(36).substring(2, 9));
+  const presCode = (code || ('IMS-' + Math.floor(100 + Math.random() * 900))).toUpperCase();
+  const presTitle = title || 'Untitled Presentation';
+
+  return {
+    id: presId,
+    code: presCode,
+    title: presTitle,
+    author: author || 'Presenter',
+    currentSlideIndex: 0,
+    options: {
+      showResultsOnPresentation: true,
+      showInstructionsToJoin: true,
+      lockResponses: false,
+    },
+    slides: [
+      {
+        id: "slide-1",
+        title: presTitle,
+        subtitle: "Welcome everyone! Scan the QR code or enter the room code to participate live from your phone.",
+        layout: "title",
+        tag: "WELCOME",
+        notes: "Welcome audience and encourage everyone to scan the QR code.",
+        background: "from-purple-900 via-indigo-900 to-slate-950",
+      }
+    ],
+    polls: {},
+    quizzes: {},
+    questions: [],
+    messages: [],
+    subtitles: {
+      text: "",
+      isFinal: true,
+      active: false,
+    },
+    reactions: {
+      clap: 0,
+      heart: 0,
+      fire: 0,
+      thumbsUp: 0,
+    }
+  };
+}
+
 export function createInitialPresentation() {
   return {
     id: "imspresentation",

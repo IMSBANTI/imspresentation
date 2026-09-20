@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createInitialPresentation } from './mockData.js';
+import { createInitialPresentation, createNewPresentation } from './mockData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,12 +91,11 @@ app.get('/api/presentations', authMiddleware, async (req, res) => {
 app.post('/api/presentations', authMiddleware, async (req, res) => {
   try {
     const { title, code } = req.body;
-    const newDeck = createInitialPresentation();
-    newDeck.id = 'pres-' + Math.random().toString(36).substring(2, 9);
-    newDeck.code = (code || ('IMS-' + Math.floor(100 + Math.random() * 900))).toUpperCase();
-    newDeck.title = title || 'Untitled Presentation';
-    newDeck.author = req.user.name || 'Presenter';
-    newDeck.slides[0].title = newDeck.title;
+    const newDeck = createNewPresentation({
+      title: title || 'Untitled Presentation',
+      code: code || undefined,
+      author: req.user.name || 'Presenter'
+    });
 
     const saved = await createPresentation({ userId: req.user.id, presentation: newDeck });
     rooms.set(saved.id.toLowerCase(), saved);
@@ -396,22 +395,65 @@ io.on('connection', (socket) => {
   });
 
   // Add / Edit slides dynamically
-  socket.on('add-slide', ({ roomId, slide }) => {
+  socket.on('add-slide', ({ roomId, slide = {} }) => {
     const room = getOrCreateRoom(roomId);
+    const newSlideId = 'slide-' + (room.slides.length + 1);
     const newSlide = {
-      id: 'slide-' + (room.slides.length + 1),
+      id: newSlideId,
       title: slide.title || 'New Interactive Slide',
-      subtitle: slide.subtitle || 'Add engagement interactions here',
+      subtitle: slide.subtitle || 'Ask questions or present content',
       layout: slide.layout || 'title',
-      tag: slide.tag || 'NEW SLIDE',
+      tag: (slide.tag || slide.layout || 'SLIDE').toUpperCase(),
       notes: slide.notes || '',
-      background: 'from-purple-950 via-slate-900 to-indigo-950',
+      background: slide.background || 'from-purple-950 via-slate-900 to-indigo-950',
     };
+
+    if (slide.layout === 'poll') {
+      const pollId = 'poll-' + Date.now();
+      newSlide.pollId = pollId;
+      room.polls[pollId] = {
+        id: pollId,
+        slideId: newSlideId,
+        question: slide.question || newSlide.title,
+        options: slide.options?.map(t => typeof t === 'string' ? { text: t, votes: 0 } : t) || [
+          { text: 'Option A', votes: 0 },
+          { text: 'Option B', votes: 0 },
+          { text: 'Option C', votes: 0 },
+        ],
+        voters: {},
+        active: true,
+        showResults: true,
+      };
+    } else if (slide.layout === 'quiz') {
+      const quizId = 'quiz-' + Date.now();
+      newSlide.quizId = quizId;
+      room.quizzes[quizId] = {
+        id: quizId,
+        slideId: newSlideId,
+        title: slide.title || 'Quiz Question',
+        question: slide.question || newSlide.title,
+        options: slide.options || [
+          { text: 'Choice 1', correct: false },
+          { text: 'Choice 2 (Correct)', correct: true },
+          { text: 'Choice 3', correct: false },
+        ],
+        active: true,
+        timeLimit: slide.timeLimit || 20,
+        revealed: false,
+        answers: {},
+      };
+    }
+
     room.slides.push(newSlide);
+    room.currentSlideIndex = room.slides.length - 1; // Move to the new slide immediately
+
     io.to(roomId.toLowerCase()).emit('slide-list-updated', {
       slides: room.slides,
-      currentSlideIndex: room.currentSlideIndex
+      currentSlideIndex: room.currentSlideIndex,
+      polls: room.polls,
+      quizzes: room.quizzes
     });
+    persistRooms(roomId);
   });
 
   socket.on('disconnect', () => {

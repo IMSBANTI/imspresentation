@@ -128,6 +128,19 @@ export default function App() {
       setPresentation((prev) => prev ? { ...prev, questions } : prev);
     });
 
+    socket.on('slide-list-updated', ({ slides, currentSlideIndex, polls, quizzes }) => {
+      setPresentation((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          slides,
+          currentSlideIndex: currentSlideIndex !== undefined ? currentSlideIndex : prev.currentSlideIndex,
+          polls: polls || prev.polls,
+          quizzes: quizzes || prev.quizzes
+        };
+      });
+    });
+
     socket.on('subtitles-updated', (subtitles) => {
       setPresentation((prev) => prev ? { ...prev, subtitles } : prev);
     });
@@ -140,6 +153,7 @@ export default function App() {
       socket.off('sync-state');
       socket.off('audience-count-updated');
       socket.off('slide-changed');
+      socket.off('slide-list-updated');
       socket.off('options-updated');
       socket.off('poll-updated');
       socket.off('quiz-updated');

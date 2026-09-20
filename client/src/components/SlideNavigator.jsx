@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, BarChart2, HelpCircle, FileText, CheckCircle2 } from 'lucide-react';
+import AddSlideModal from './AddSlideModal';
 
 export default function SlideNavigator({ 
   slides, 
@@ -7,6 +8,8 @@ export default function SlideNavigator({
   onSelectSlide, 
   onAddSlide 
 }) {
+  const [showAddModal, setShowAddModal] = useState(false);
+
   const getIconForLayout = (layout) => {
     switch (layout) {
       case 'poll':
@@ -27,8 +30,8 @@ export default function SlideNavigator({
           Slides ({slides.length})
         </span>
         <button
-          onClick={onAddSlide}
-          className="p-1 rounded-md text-purple-600 hover:bg-purple-50 transition"
+          onClick={() => setShowAddModal(true)}
+          className="p-1 rounded-md text-purple-600 hover:bg-purple-50 transition cursor-pointer"
           title="Add Slide"
         >
           <Plus size={16} />
@@ -99,12 +102,20 @@ export default function SlideNavigator({
 
       {/* Quick Add Slide Button at bottom */}
       <button
-        onClick={onAddSlide}
-        className="mt-3 w-full py-2.5 border border-dashed border-purple-200 rounded-xl text-purple-600 hover:border-purple-400 hover:bg-purple-50 text-xs font-medium flex items-center justify-center space-x-1.5 transition"
+        onClick={() => setShowAddModal(true)}
+        className="mt-3 w-full py-2.5 border border-dashed border-purple-200 rounded-xl text-purple-600 hover:border-purple-400 hover:bg-purple-50 text-xs font-medium flex items-center justify-center space-x-1.5 transition cursor-pointer"
       >
         <Plus size={14} />
         <span>Add interactive slide</span>
       </button>
+
+      {/* Add Slide Modal */}
+      <AddSlideModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAddSlide={onAddSlide}
+        slideCount={slides.length}
+      />
     </aside>
   );
 }
