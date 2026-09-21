@@ -35,15 +35,21 @@ export default function DashboardView({
   const fetchPresentations = async () => {
     try {
       const token = localStorage.getItem('ims_token');
-      const res = await fetch('/api/presentations', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const headers = {};
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch('/api/presentations', { headers });
       if (res.ok) {
         const data = await res.json();
+        if (data.token && (!token || token === 'null' || token === 'undefined')) {
+          localStorage.setItem('ims_token', data.token);
+        }
         setPresentations(data.presentations || []);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Fetch presentations error:', e);
     } finally {
       setLoading(false);
     }
@@ -60,28 +66,37 @@ export default function DashboardView({
 
     try {
       const token = localStorage.getItem('ims_token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/presentations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify({
           title: newTitle.trim(),
           code: newCode.trim() || undefined
         })
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+
+      if (res.ok && data.presentation) {
+        if (data.token) {
+          localStorage.setItem('ims_token', data.token);
+        }
         setShowNewModal(false);
         setNewTitle('');
         setNewCode('');
-        fetchPresentations();
+        await fetchPresentations();
         onOpenStudio(data.presentation.id);
+      } else {
+        alert(data.error || 'Failed to create presentation. Please try again.');
       }
     } catch (e) {
-      console.error(e);
+      console.error('Create presentation error:', e);
+      alert('Network error connecting to server. Please try again.');
     } finally {
       setCreating(false);
     }

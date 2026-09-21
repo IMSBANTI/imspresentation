@@ -36,7 +36,8 @@ import {
   handleRegister, 
   handleLogin, 
   handleGetMe, 
-  authMiddleware 
+  authMiddleware,
+  generateToken
 } from './auth.js';
 
 // Initialize Database (Neon PostgreSQL or local fallback)
@@ -121,12 +122,19 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/register', handleRegister);
 app.post('/api/auth/login', handleLogin);
 app.get('/api/auth/me', authMiddleware, handleGetMe);
+app.get('/api/auth/session', (req, res) => {
+  const guestUser = { id: 1, name: 'Presenter', email: 'presenter@imspresentation.com' };
+  const token = generateToken(guestUser);
+  res.json({ user: guestUser, token });
+});
 
 // User Presentations Dashboard Routes
 app.get('/api/presentations', authMiddleware, async (req, res) => {
   try {
-    const list = await getUserPresentations(req.user.id);
-    res.json({ presentations: list });
+    const userId = req.user?.id || 1;
+    const list = await getUserPresentations(userId);
+    const token = generateToken(req.user || { id: userId, name: 'Presenter' });
+    res.json({ presentations: list, token });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -135,17 +143,22 @@ app.get('/api/presentations', authMiddleware, async (req, res) => {
 app.post('/api/presentations', authMiddleware, async (req, res) => {
   try {
     const { title, code } = req.body;
+    const userId = req.user?.id || 1;
+    const authorName = req.user?.name || 'Presenter';
+
     const newDeck = createNewPresentation({
       title: title || 'Untitled Presentation',
       code: code || undefined,
-      author: req.user.name || 'Presenter'
+      author: authorName
     });
 
-    const saved = await createPresentation({ userId: req.user.id, presentation: newDeck });
+    const saved = await createPresentation({ userId, presentation: newDeck });
     rooms.set(saved.id.toLowerCase(), saved);
     rooms.set(saved.code.toLowerCase(), saved);
-    res.status(201).json({ presentation: saved });
+    const token = generateToken(req.user || { id: userId, name: authorName });
+    res.status(201).json({ presentation: saved, token });
   } catch (e) {
+    console.error("Create presentation error:", e);
     res.status(500).json({ error: e.message });
   }
 });

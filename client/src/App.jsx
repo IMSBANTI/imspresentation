@@ -22,13 +22,17 @@ export default function App() {
 
   const refreshUserPresentations = async () => {
     const token = localStorage.getItem('ims_token');
-    if (!token) return;
+    const headers = {};
+    if (token && token !== 'null' && token !== 'undefined') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     try {
-      const res = await fetch('/api/presentations', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/presentations', { headers });
       if (res.ok) {
         const data = await res.json();
+        if (data.token && (!token || token === 'null' || token === 'undefined')) {
+          localStorage.setItem('ims_token', data.token);
+        }
         setUserPresentations(data.presentations || []);
       }
     } catch (e) {
@@ -50,14 +54,30 @@ export default function App() {
     }
   }, []);
 
-  // Check user token on mount
+  // Check user token or auto-initialize presenter session on mount
   useEffect(() => {
     const token = localStorage.getItem('ims_token');
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     const room = params.get('room');
 
-    if (token) {
+    function initGuestSession() {
+      fetch('/api/auth/session')
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data && data.token) {
+            localStorage.setItem('ims_token', data.token);
+            setUser(data.user);
+            refreshUserPresentations();
+            if (!view && !room) {
+              setViewMode('dashboard');
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (token && token !== 'null' && token !== 'undefined') {
       fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -65,16 +85,19 @@ export default function App() {
         .then((data) => {
           if (data && data.user) {
             setUser(data.user);
+            if (data.token) localStorage.setItem('ims_token', data.token);
             refreshUserPresentations();
             // If logged in and no specific room/view requested in URL, go directly to Dashboard
             if (!view && !room) {
               setViewMode('dashboard');
             }
           } else {
-            localStorage.removeItem('ims_token');
+            initGuestSession();
           }
         })
-        .catch(() => {});
+        .catch(() => initGuestSession());
+    } else {
+      initGuestSession();
     }
   }, []);
 
