@@ -62,12 +62,18 @@ export default function SlidePreview({
 
         {/* Slide Category Tag & Code */}
         <div className="relative z-10 flex items-center justify-between text-xs">
-          <span className="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-purple-200 font-semibold tracking-wide uppercase text-[10px] sm:text-[11px] border border-white/10">
+          <span className={`px-2.5 py-1 rounded-full font-semibold tracking-wide uppercase text-[10px] sm:text-[11px] border ${
+            resolvedBg.isLight 
+              ? 'bg-purple-100 text-purple-800 border-purple-200 shadow-xs' 
+              : 'bg-white/10 backdrop-blur-md text-purple-200 border-white/10'
+          }`}>
             {slide?.tag || "PRESENTATION"}
           </span>
-          <div className="flex items-center space-x-2 text-white/60 text-xs">
+          <div className={`flex items-center space-x-2 text-xs ${resolvedBg.isLight ? 'text-slate-500' : 'text-white/60'}`}>
             <span className="hidden sm:inline">{typeof window !== 'undefined' ? window.location.host : 'ims'}</span>
-            <span className="px-2 py-0.5 rounded bg-purple-500/30 text-purple-200 font-mono font-bold text-[11px]">
+            <span className={`px-2 py-0.5 rounded font-mono font-bold text-[11px] ${
+              resolvedBg.isLight ? 'bg-purple-100 text-purple-800' : 'bg-purple-500/30 text-purple-200'
+            }`}>
               #{slide?.code || "IMSPRESENTATION"}
             </span>
           </div>
@@ -78,29 +84,39 @@ export default function SlidePreview({
           {/* Layout: Poll View (as shown in screenshot) */}
           {slide?.layout === 'poll' && poll ? (
             <div className="max-w-xl mx-auto w-full">
-              <h2 className="text-base sm:text-xl md:text-2xl font-bold text-white text-center mb-0.5 sm:mb-1 drop-shadow-sm line-clamp-2">
+              <h2 className={`text-base sm:text-xl md:text-2xl font-bold text-center mb-0.5 sm:mb-1 line-clamp-2 ${
+                resolvedBg.isLight ? 'text-slate-900' : 'text-white drop-shadow-sm'
+              }`}>
                 {poll.question || slide.title}
               </h2>
-              <p className="text-[11px] sm:text-xs text-purple-200/80 text-center mb-2 sm:mb-4">
+              <p className={`text-[11px] sm:text-xs text-center mb-2 sm:mb-4 ${
+                resolvedBg.isLight ? 'text-slate-600' : 'text-purple-200/80'
+              }`}>
                 {totalPollVotes} responses recorded in real time
               </p>
 
-              {/* Bar Chart Visualizer matching screenshot purple/blue gradient */}
+              {/* Bar Chart Visualizer matching purple/blue gradient */}
               <div className="h-24 sm:h-32 flex items-end justify-center space-x-2 sm:space-x-4 md:space-x-6 px-2">
                 {poll.options.map((opt, idx) => {
                   const pct = calculatePercentage(opt.votes, totalPollVotes);
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center group max-w-[80px]">
-                      <span className="text-[10px] sm:text-xs font-bold text-purple-200 mb-1 opacity-90 transition group-hover:scale-110">
+                      <span className={`text-[10px] sm:text-xs font-bold mb-1 opacity-90 transition group-hover:scale-110 ${
+                        resolvedBg.isLight ? 'text-purple-700' : 'text-purple-200'
+                      }`}>
                         {pct}%
                       </span>
-                      <div className="w-full bg-white/10 rounded-t-lg h-16 sm:h-24 flex items-end p-0.5 overflow-hidden">
+                      <div className={`w-full rounded-t-lg h-16 sm:h-24 flex items-end p-0.5 overflow-hidden ${
+                        resolvedBg.isLight ? 'bg-slate-200/80 border border-slate-300/60' : 'bg-white/10'
+                      }`}>
                         <div
                           className="w-full rounded-t bg-gradient-to-t from-purple-600 via-indigo-500 to-cyan-400 transition-all duration-700 shadow-lg shadow-purple-500/20"
                           style={{ height: `${Math.max(8, pct)}%` }}
                         ></div>
                       </div>
-                      <span className="text-[9px] sm:text-[10px] text-white/70 mt-1 sm:mt-1.5 text-center line-clamp-2 leading-tight w-full font-medium">
+                      <span className={`text-[9px] sm:text-[10px] mt-1 sm:mt-1.5 text-center line-clamp-2 leading-tight w-full font-medium ${
+                        resolvedBg.isLight ? 'text-slate-700' : 'text-white/70'
+                      }`}>
                         {opt.text}
                       </span>
                     </div>
@@ -111,10 +127,12 @@ export default function SlidePreview({
           ) : slide?.layout === 'quiz' && quiz ? (
             /* Layout: Quiz View */
             <div className="max-w-xl mx-auto w-full text-center">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-3 border border-amber-500/30">
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 text-amber-500 text-xs font-bold mb-3 border border-amber-500/30">
                 ⏱️ TIME REMAINING: {quiz.timeLimit}s
               </div>
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-6">
+              <h2 className={`text-xl md:text-2xl font-bold mb-6 ${
+                resolvedBg.isLight ? 'text-slate-900' : 'text-white'
+              }`}>
                 {quiz.question}
               </h2>
 
@@ -124,11 +142,13 @@ export default function SlidePreview({
                     key={idx}
                     className={`p-3 rounded-xl border text-xs font-semibold flex items-center space-x-2.5 transition ${
                       quiz.revealed && opt.correct
-                        ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200'
-                        : 'bg-white/5 border-white/10 text-white/90'
+                        ? (resolvedBg.isLight ? 'bg-emerald-100 border-emerald-400 text-emerald-900' : 'bg-emerald-500/20 border-emerald-400 text-emerald-200')
+                        : (resolvedBg.isLight ? 'bg-white/90 border-slate-200 text-slate-800 shadow-xs' : 'bg-white/5 border-white/10 text-white/90')
                     }`}
                   >
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px]">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
+                      resolvedBg.isLight ? 'bg-purple-100 text-purple-700' : 'bg-white/10 text-white'
+                    }`}>
                       {['A', 'B', 'C', 'D'][idx]}
                     </span>
                     <span className="truncate">{opt.text}</span>
@@ -139,19 +159,27 @@ export default function SlidePreview({
           ) : slide?.layout === 'stats' ? (
             /* Layout: Stats */
             <div className="max-w-xl mx-auto w-full text-center">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+              <h2 className={`text-xl md:text-2xl font-bold mb-2 ${
+                resolvedBg.isLight ? 'text-slate-900' : 'text-white'
+              }`}>
                 {slide.title}
               </h2>
-              <p className="text-xs text-purple-200/80 mb-6 max-w-md mx-auto">
+              <p className={`text-xs mb-6 max-w-md mx-auto ${
+                resolvedBg.isLight ? 'text-slate-600' : 'text-purple-200/80'
+              }`}>
                 {slide.subtitle}
               </p>
               <div className="grid grid-cols-3 gap-3">
                 {slide.stats?.map((stat, i) => (
-                  <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs">
-                    <div className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-purple-400 to-cyan-300 bg-clip-text text-transparent">
+                  <div key={i} className={`p-3 rounded-xl backdrop-blur-xs ${
+                    resolvedBg.isLight ? 'bg-white/90 border border-slate-200/90 shadow-sm' : 'bg-white/5 border border-white/10'
+                  }`}>
+                    <div className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                       {stat.value}
                     </div>
-                    <div className="text-[10px] text-white/70 mt-1 font-medium">
+                    <div className={`text-[10px] mt-1 font-medium ${
+                      resolvedBg.isLight ? 'text-slate-600' : 'text-white/70'
+                    }`}>
                       {stat.label}
                     </div>
                   </div>
@@ -161,10 +189,14 @@ export default function SlidePreview({
           ) : (
             /* Default Slide Layout */
             <div className="max-w-xl mx-auto w-full text-center">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight mb-3">
+              <h2 className={`text-2xl md:text-3xl font-extrabold tracking-tight mb-3 ${
+                resolvedBg.isLight ? 'text-slate-900' : 'text-white'
+              }`}>
                 {slide?.title}
               </h2>
-              <p className="text-sm text-purple-200/80 max-w-md mx-auto leading-relaxed">
+              <p className={`text-sm max-w-md mx-auto leading-relaxed ${
+                resolvedBg.isLight ? 'text-slate-600 font-medium' : 'text-purple-200/80'
+              }`}>
                 {slide?.subtitle}
               </p>
             </div>
@@ -173,8 +205,12 @@ export default function SlidePreview({
 
         {/* Live Subtitle Banner Preview (if active) */}
         {subtitles?.active && subtitles?.text && (
-          <div className="relative z-20 w-full px-4 py-2 rounded-xl bg-black/70 backdrop-blur-md border border-purple-500/30 text-center animate-fadeIn">
-            <span className="text-xs md:text-sm font-medium text-white/95">
+          <div className={`relative z-20 w-full px-4 py-2 rounded-xl text-center animate-fadeIn ${
+            resolvedBg.isLight 
+              ? 'bg-white/90 backdrop-blur-md border border-purple-300 text-slate-800 shadow-md' 
+              : 'bg-black/70 backdrop-blur-md border border-purple-500/30 text-white/95'
+          }`}>
+            <span className="text-xs md:text-sm font-medium">
               "{subtitles.text}"
             </span>
           </div>
@@ -184,7 +220,11 @@ export default function SlidePreview({
         <button
           onClick={onPrevSlide}
           disabled={currentIndex === 0}
-          className={`absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center transition ${
+          className={`absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition ${
+            resolvedBg.isLight
+              ? 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200 shadow-sm'
+              : 'bg-black/40 hover:bg-black/70 backdrop-blur-md text-white'
+          } ${
             currentIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-80 hover:opacity-100'
           }`}
           title="Previous Slide"
@@ -195,7 +235,11 @@ export default function SlidePreview({
         <button
           onClick={onNextSlide}
           disabled={currentIndex >= totalSlides - 1}
-          className={`absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center transition ${
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition ${
+            resolvedBg.isLight
+              ? 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200 shadow-sm'
+              : 'bg-black/40 hover:bg-black/70 backdrop-blur-md text-white'
+          } ${
             currentIndex >= totalSlides - 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-80 hover:opacity-100'
           }`}
           title="Next Slide"

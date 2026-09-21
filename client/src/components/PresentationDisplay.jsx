@@ -138,17 +138,25 @@ export default function PresentationDisplay({
 
       {/* Top Stage Bar / Join Banner */}
       {presentation?.options?.showInstructionsToJoin && (
-        <header className="px-8 py-4 flex items-center justify-between border-b border-white/10 bg-black/30 backdrop-blur-md relative z-30">
+        <header className={`px-8 py-4 flex items-center justify-between border-b backdrop-blur-md relative z-30 transition-colors ${
+          resolvedBg.isLight 
+            ? 'border-slate-200/90 bg-white/75 text-slate-800 shadow-xs' 
+            : 'border-white/10 bg-black/30 text-white'
+        }`}>
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-sm font-black text-xs">
               IMS
             </div>
             <div>
-              <span className="text-xs text-purple-300 font-semibold uppercase tracking-wider block">
+              <span className={`text-xs font-semibold uppercase tracking-wider block ${
+                resolvedBg.isLight ? 'text-purple-700' : 'text-purple-300'
+              }`}>
                 Join from your phone
               </span>
-              <span className="text-sm font-medium text-white/90">
-                Go to <strong className="text-white underline">{typeof window !== 'undefined' ? window.location.host : 'your-site'}</strong>
+              <span className={`text-sm font-medium ${
+                resolvedBg.isLight ? 'text-slate-800' : 'text-white/90'
+              }`}>
+                Go to <strong className={`underline ${resolvedBg.isLight ? 'text-slate-900' : 'text-white'}`}>{typeof window !== 'undefined' ? window.location.host : 'your-site'}</strong>
               </span>
             </div>
           </div>
@@ -163,26 +171,44 @@ export default function PresentationDisplay({
               <span>Show QR Code</span>
             </button>
 
-            <div className="flex items-center space-x-2 px-4 py-1.5 rounded-full bg-purple-600/30 border border-purple-400/30 text-purple-200">
-              <span className="text-xs uppercase tracking-wider text-purple-300">Room Code:</span>
-              <span className="font-mono text-base font-extrabold text-white">
+            <div className={`flex items-center space-x-2 px-4 py-1.5 rounded-full border ${
+              resolvedBg.isLight 
+                ? 'bg-purple-100/90 border-purple-200 text-purple-900' 
+                : 'bg-purple-600/30 border-purple-400/30 text-purple-200'
+            }`}>
+              <span className={`text-xs uppercase tracking-wider ${
+                resolvedBg.isLight ? 'text-purple-700 font-bold' : 'text-purple-300'
+              }`}>Room Code:</span>
+              <span className={`font-mono text-base font-extrabold ${
+                resolvedBg.isLight ? 'text-purple-900' : 'text-white'
+              }`}>
                 #{presentation?.code || "IMSPRESENTATION"}
               </span>
             </div>
 
-            <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-xs">
-              <Users size={13} className="text-emerald-400" />
+            <div className={`flex items-center space-x-1.5 px-3 py-1 rounded-full border text-xs ${
+              resolvedBg.isLight 
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                : 'bg-white/10 text-white border-white/10'
+            }`}>
+              <Users size={13} className={resolvedBg.isLight ? 'text-emerald-600' : 'text-emerald-400'} />
               <span>{audienceCount} online</span>
             </div>
 
             {/* Presentation Switcher Dropdown */}
             {userPresentations && userPresentations.length > 1 && onSwitchPresentation && (
-              <div className="flex items-center space-x-1.5 bg-white/10 rounded-full px-2.5 py-1 border border-white/15 text-xs text-purple-200">
-                <FolderSync size={13} className="text-purple-300" />
+              <div className={`flex items-center space-x-1.5 rounded-full px-2.5 py-1 border text-xs ${
+                resolvedBg.isLight 
+                  ? 'bg-white/90 border-slate-200 text-slate-800' 
+                  : 'bg-white/10 border-white/15 text-purple-200'
+              }`}>
+                <FolderSync size={13} className="text-purple-600" />
                 <select
                   value={presentation?.id}
                   onChange={(e) => onSwitchPresentation(e.target.value)}
-                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer"
+                  className={`bg-transparent text-xs font-semibold focus:outline-none cursor-pointer ${
+                    resolvedBg.isLight ? 'text-slate-800' : 'text-white'
+                  }`}
                   title="Switch Presentation"
                 >
                   {userPresentations.map((p) => (
@@ -197,7 +223,11 @@ export default function PresentationDisplay({
             {onOpenDashboard && (
               <button
                 onClick={onOpenDashboard}
-                className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs text-purple-200 transition font-medium"
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs transition font-medium border ${
+                  resolvedBg.isLight 
+                    ? 'bg-white/80 hover:bg-white text-slate-700 border-slate-200 shadow-xs' 
+                    : 'bg-white/10 hover:bg-white/20 text-purple-200 border-transparent'
+                }`}
                 title="Back to Dashboard"
               >
                 <Layers size={13} />
@@ -225,13 +255,21 @@ export default function PresentationDisplay({
         {currentSlide?.layout === 'poll' && poll ? (
           <div className="w-full text-center space-y-8 animate-fadeIn">
             <div>
-              <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                resolvedBg.isLight 
+                  ? 'bg-purple-100 text-purple-800 border-purple-200 shadow-xs' 
+                  : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+              }`}>
                 Live Audience Poll
               </span>
-              <h1 className="text-3xl md:text-5xl font-extrabold text-white mt-4 drop-shadow-md">
+              <h1 className={`text-3xl md:text-5xl font-extrabold mt-4 ${
+                resolvedBg.isLight ? 'text-slate-900 drop-shadow-none' : 'text-white drop-shadow-md'
+              }`}>
                 {poll.question || currentSlide.title}
               </h1>
-              <p className="text-sm text-purple-200/70 mt-2">
+              <p className={`text-sm mt-2 ${
+                resolvedBg.isLight ? 'text-slate-600' : 'text-purple-200/70'
+              }`}>
                 {totalPollVotes} responses cast in real time
               </p>
             </div>
@@ -243,19 +281,27 @@ export default function PresentationDisplay({
                   const pct = calculatePercentage(opt.votes, totalPollVotes);
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center group max-w-[140px]">
-                      <span className="text-lg md:text-xl font-extrabold text-purple-200 mb-2 transition">
+                      <span className={`text-lg md:text-xl font-extrabold mb-2 transition ${
+                        resolvedBg.isLight ? 'text-purple-800' : 'text-purple-200'
+                      }`}>
                         {pct}%
                       </span>
-                      <div className="w-full bg-white/10 rounded-t-2xl h-52 flex items-end p-1 shadow-inner">
+                      <div className={`w-full rounded-t-2xl h-52 flex items-end p-1 shadow-inner ${
+                        resolvedBg.isLight ? 'bg-slate-200/80 border border-slate-300/60' : 'bg-white/10'
+                      }`}>
                         <div
                           className="w-full rounded-t-xl bg-gradient-to-t from-purple-600 via-indigo-500 to-cyan-400 transition-all duration-700 shadow-xl shadow-purple-600/30"
                           style={{ height: `${Math.max(10, pct)}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs md:text-sm text-white/90 mt-3 text-center font-medium line-clamp-2">
+                      <span className={`text-xs md:text-sm mt-3 text-center font-medium line-clamp-2 ${
+                        resolvedBg.isLight ? 'text-slate-800 font-semibold' : 'text-white/90'
+                      }`}>
                         {opt.text}
                       </span>
-                      <span className="text-[11px] text-white/50 mt-0.5">
+                      <span className={`text-[11px] mt-0.5 ${
+                        resolvedBg.isLight ? 'text-slate-500' : 'text-white/50'
+                      }`}>
                         {opt.votes || 0} votes
                       </span>
                     </div>
@@ -267,14 +313,16 @@ export default function PresentationDisplay({
         ) : currentSlide?.layout === 'quiz' && quiz ? (
           /* Layout: LIVE QUIZ */
           <div className="w-full text-center space-y-8 animate-fadeIn max-w-3xl">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-amber-500/20 text-amber-500 font-bold border border-amber-500/30">
               <Trophy size={16} />
               <span>LIVE QUIZ QUESTION</span>
               <span>•</span>
               <span>{quiz.timeLimit}s</span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">
+            <h1 className={`text-3xl md:text-4xl font-extrabold leading-tight ${
+              resolvedBg.isLight ? 'text-slate-900' : 'text-white'
+            }`}>
               {quiz.question}
             </h1>
 
@@ -284,11 +332,13 @@ export default function PresentationDisplay({
                   key={idx}
                   className={`p-4 rounded-2xl border text-sm font-semibold flex items-center space-x-3 transition duration-500 ${
                     quiz.revealed && opt.correct
-                      ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200 shadow-lg shadow-emerald-500/20 scale-102'
-                      : 'bg-white/10 border-white/10 text-white/90'
+                      ? (resolvedBg.isLight ? 'bg-emerald-100 border-emerald-400 text-emerald-950 shadow-md scale-102' : 'bg-emerald-500/30 border-emerald-400 text-emerald-200 shadow-lg shadow-emerald-500/20 scale-102')
+                      : (resolvedBg.isLight ? 'bg-white/90 border-slate-200 text-slate-800 shadow-md' : 'bg-white/10 border-white/10 text-white/90')
                   }`}
                 >
-                  <span className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold">
+                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    resolvedBg.isLight ? 'bg-purple-100 text-purple-700' : 'bg-white/15'
+                  }`}>
                     {['A', 'B', 'C', 'D'][idx]}
                   </span>
                   <span>{opt.text}</span>
@@ -299,22 +349,34 @@ export default function PresentationDisplay({
         ) : currentSlide?.layout === 'stats' ? (
           /* Layout: STATS */
           <div className="w-full text-center space-y-8 animate-fadeIn max-w-4xl">
-            <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase tracking-wider border border-cyan-500/30">
+            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+              resolvedBg.isLight 
+                ? 'bg-cyan-100 text-cyan-800 border-cyan-200 shadow-xs' 
+                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+            }`}>
               {currentSlide.tag || "INSIGHT"}
             </span>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-white">
+            <h1 className={`text-3xl md:text-5xl font-extrabold ${
+              resolvedBg.isLight ? 'text-slate-900' : 'text-white'
+            }`}>
               {currentSlide.title}
             </h1>
-            <p className="text-base text-purple-200/80 max-w-2xl mx-auto">
+            <p className={`text-base max-w-2xl mx-auto ${
+              resolvedBg.isLight ? 'text-slate-600' : 'text-purple-200/80'
+            }`}>
               {currentSlide.subtitle}
             </p>
             <div className="grid grid-cols-3 gap-6 pt-4">
               {currentSlide.stats?.map((stat, i) => (
-                <div key={i} className="p-6 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
-                  <div className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">
+                <div key={i} className={`p-6 rounded-3xl backdrop-blur-md shadow-xl ${
+                  resolvedBg.isLight ? 'bg-white/90 border border-slate-200/80' : 'bg-white/5 border border-white/10'
+                }`}>
+                  <div className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
                     {stat.value}
                   </div>
-                  <div className="text-xs md:text-sm text-white/70 mt-2 font-medium">
+                  <div className={`text-xs md:text-sm mt-2 font-medium ${
+                    resolvedBg.isLight ? 'text-slate-600' : 'text-white/70'
+                  }`}>
                     {stat.label}
                   </div>
                 </div>
@@ -324,13 +386,21 @@ export default function PresentationDisplay({
         ) : (
           /* Default Presentation Slide */
           <div className="w-full text-center space-y-6 animate-fadeIn max-w-3xl">
-            <span className="px-3.5 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+            <span className={`px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+              resolvedBg.isLight 
+                ? 'bg-purple-100 text-purple-800 border-purple-200 shadow-xs' 
+                : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+            }`}>
               {currentSlide?.tag || "SLIDE"}
             </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
+            <h1 className={`text-4xl md:text-6xl font-extrabold tracking-tight leading-tight ${
+              resolvedBg.isLight ? 'text-slate-900' : 'text-white'
+            }`}>
               {currentSlide?.title}
             </h1>
-            <p className="text-lg md:text-xl text-purple-200/80 max-w-2xl mx-auto leading-relaxed">
+            <p className={`text-lg md:text-xl max-w-2xl mx-auto leading-relaxed ${
+              resolvedBg.isLight ? 'text-slate-600 font-medium' : 'text-purple-200/80'
+            }`}>
               {currentSlide?.subtitle}
             </p>
 
@@ -350,7 +420,9 @@ export default function PresentationDisplay({
                     level="Q"
                   />
                 </div>
-                <span className="text-xs font-semibold text-purple-200 mt-2 flex items-center space-x-1">
+                <span className={`text-xs font-semibold mt-2 flex items-center space-x-1 ${
+                  resolvedBg.isLight ? 'text-purple-800' : 'text-purple-200'
+                }`}>
                   <span>📱 Scan with camera to join</span>
                 </span>
               </div>

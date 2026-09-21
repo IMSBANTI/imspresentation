@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Sliders, Lock, HelpCircle, Palette, Check, Sparkles, Layers } from 'lucide-react';
-import { BACKGROUND_PRESETS, resolveSlideBackground } from '../utils/themeUtils';
+import { Sliders, Lock, HelpCircle, Palette, Check, Sparkles, Layers, Sun, Moon } from 'lucide-react';
+import { LIGHT_THEMES, DARK_THEMES, resolveSlideBackground } from '../utils/themeUtils';
 
 export default function PresentationOptions({
   options,
@@ -8,12 +8,14 @@ export default function PresentationOptions({
   currentSlide,
   onChangeBackground
 }) {
+  const [themeMode, setThemeMode] = useState('light'); // 'light' | 'dark'
   const [customBg, setCustomBg] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   const currentBg = currentSlide?.background || 'cosmic';
   const resolved = resolveSlideBackground(currentBg);
+  const activeList = themeMode === 'light' ? LIGHT_THEMES : DARK_THEMES;
 
   const handleSelectPreset = (presetId, applyToAll = false) => {
     if (onChangeBackground) {
@@ -48,9 +50,40 @@ export default function PresentationOptions({
           )}
         </div>
 
+        {/* Light vs Dark Mode Switcher Tabs */}
+        <div className="flex bg-slate-100 p-0.5 rounded-xl mb-2.5">
+          <button
+            type="button"
+            onClick={() => setThemeMode('light')}
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center space-x-1.5 ${
+              themeMode === 'light'
+                ? 'bg-white text-purple-700 shadow-xs ring-1 ring-purple-200'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Sun size={13} className={themeMode === 'light' ? 'text-amber-500' : 'text-slate-400'} />
+            <span>Light Colors</span>
+            <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.2 rounded-full font-bold">8</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setThemeMode('dark')}
+            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center space-x-1.5 ${
+              themeMode === 'dark'
+                ? 'bg-white text-purple-700 shadow-xs ring-1 ring-purple-200'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Moon size={13} className={themeMode === 'dark' ? 'text-indigo-500' : 'text-slate-400'} />
+            <span>Dark Colors</span>
+            <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-bold">8</span>
+          </button>
+        </div>
+
         {/* Theme Color Palette Grid */}
         <div className="grid grid-cols-4 gap-2 mb-2.5">
-          {BACKGROUND_PRESETS.map((preset) => {
+          {activeList.map((preset) => {
             const isSelected = 
               currentBg === preset.id || 
               currentBg === preset.className || 
@@ -61,20 +94,22 @@ export default function PresentationOptions({
                 key={preset.id}
                 type="button"
                 onClick={() => handleSelectPreset(preset.id, false)}
-                className={`group relative h-9 rounded-xl overflow-hidden border transition transform active:scale-95 flex items-center justify-center ${
+                className={`group relative h-10 rounded-xl overflow-hidden border transition transform active:scale-95 flex items-center justify-center ${
                   isSelected 
-                    ? 'border-purple-600 ring-2 ring-purple-600/30 shadow-xs' 
+                    ? 'border-purple-600 ring-2 ring-purple-600/40 shadow-sm' 
                     : 'border-slate-200 hover:border-purple-400 hover:shadow-xs'
                 }`}
                 style={{ background: preset.preview }}
                 title={preset.name}
               >
                 {isSelected && (
-                  <div className="w-4 h-4 rounded-full bg-white/90 text-purple-700 flex items-center justify-center shadow-xs">
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center shadow-xs ${
+                    preset.isLight ? 'bg-purple-600 text-white' : 'bg-white text-purple-700'
+                  }`}>
                     <Check size={11} strokeWidth={3} />
                   </div>
                 )}
-                <span className="absolute bottom-0 inset-x-0 bg-black/60 backdrop-blur-xs text-[8px] text-white font-medium truncate px-1 py-0.2 text-center opacity-0 group-hover:opacity-100 transition">
+                <span className="absolute bottom-0 inset-x-0 bg-slate-900/70 backdrop-blur-xs text-[8px] text-white font-medium truncate px-1 py-0.2 text-center opacity-0 group-hover:opacity-100 transition">
                   {preset.name}
                 </span>
               </button>
@@ -114,7 +149,7 @@ export default function PresentationOptions({
                 type="text"
                 value={customBg}
                 onChange={(e) => setCustomBg(e.target.value)}
-                placeholder="e.g. #0f172a or linear-gradient(...)"
+                placeholder="e.g. #f8fafc or linear-gradient(...)"
                 className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/20 outline-hidden font-mono"
               />
               <button
@@ -126,7 +161,7 @@ export default function PresentationOptions({
               </button>
             </div>
             <div className="flex justify-between items-center text-[10px] text-slate-400">
-              <span>Supports hex colors (#111827) or CSS gradients</span>
+              <span>Supports hex colors (#ffffff) or CSS gradients</span>
               <button
                 type="button"
                 onClick={() => handleApplyCustom(true)}
