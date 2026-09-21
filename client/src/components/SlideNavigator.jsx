@@ -83,7 +83,7 @@ export default function SlideNavigator({
                           }
                         }
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                      className="opacity-50 hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                       title="Delete Slide"
                     >
                       <Trash2 size={13} />

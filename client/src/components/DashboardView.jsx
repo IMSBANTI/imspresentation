@@ -29,6 +29,7 @@ export default function DashboardView({
   const [showNewModal, setShowNewModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCode, setNewCode] = useState('');
+  const [templateChoice, setTemplateChoice] = useState('blank');
   const [creating, setCreating] = useState(false);
   const [qrModalPres, setQrModalPres] = useState(null);
 
@@ -76,7 +77,8 @@ export default function DashboardView({
         headers,
         body: JSON.stringify({
           title: newTitle.trim(),
-          code: newCode.trim() || undefined
+          code: newCode.trim() || undefined,
+          template: templateChoice
         })
       });
 
@@ -89,6 +91,7 @@ export default function DashboardView({
         setShowNewModal(false);
         setNewTitle('');
         setNewCode('');
+        setTemplateChoice('blank');
         await fetchPresentations();
         onOpenStudio(data.presentation.id);
       } else {
@@ -330,10 +333,68 @@ export default function DashboardView({
                 </span>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Starting Slides
+                </label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setTemplateChoice('blank')}
+                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                      templateChoice === 'blank'
+                        ? 'border-purple-600 bg-purple-50/60 ring-2 ring-purple-600/15'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900">📄 Blank Deck</span>
+                        {templateChoice === 'blank' && (
+                          <span className="text-[9px] font-bold uppercase bg-purple-200 text-purple-800 px-1.5 py-0.2 rounded-sm">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+                        1 clean Title slide. Build your deck from scratch with no pre-filled slides.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTemplateChoice('sample')}
+                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                      templateChoice === 'sample'
+                        ? 'border-purple-600 bg-purple-50/60 ring-2 ring-purple-600/15'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900">🎨 Sample Template</span>
+                        {templateChoice === 'sample' && (
+                          <span className="text-[9px] font-bold uppercase bg-purple-200 text-purple-800 px-1.5 py-0.2 rounded-sm">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+                        6 pre-built slides with sample Poll, Quiz & Q&A.
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               <div className="flex items-center justify-end space-x-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowNewModal(false)}
+                  onClick={() => {
+                    setShowNewModal(false);
+                    setTemplateChoice('blank');
+                  }}
                   className="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100 transition"
                 >
                   Cancel

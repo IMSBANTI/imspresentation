@@ -142,14 +142,15 @@ app.get('/api/presentations', authMiddleware, async (req, res) => {
 
 app.post('/api/presentations', authMiddleware, async (req, res) => {
   try {
-    const { title, code } = req.body;
+    const { title, code, template = 'blank' } = req.body;
     const userId = req.user?.id || 1;
     const authorName = req.user?.name || 'Presenter';
 
     const newDeck = createNewPresentation({
       title: title || 'Untitled Presentation',
       code: code || undefined,
-      author: authorName
+      author: authorName,
+      template: template
     });
 
     const saved = await createPresentation({ userId, presentation: newDeck });
