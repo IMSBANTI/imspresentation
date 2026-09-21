@@ -12,7 +12,9 @@ import {
   Sparkles, 
   Trash2, 
   LogOut,
-  QrCode 
+  QrCode,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 import QRCodeModal from './QRCodeModal';
 
@@ -22,6 +24,7 @@ export default function DashboardView({
   onOpenStudio,
   onOpenStage,
   onOpenJoin,
+  onOpenAuthModal,
 }) {
   const [presentations, setPresentations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,35 +147,67 @@ export default function DashboardView({
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="text-right hidden sm:block">
-            <span className="text-xs font-bold text-slate-800 block">
-              {user?.name || "Presenter"}
-            </span>
-            <span className="text-[10px] text-slate-400">
-              {user?.email}
-            </span>
-          </div>
+          {user ? (
+            <>
+              <div className="text-right hidden sm:block">
+                <span className="text-xs font-bold text-slate-800 block">
+                  {user.name}
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {user.email}
+                </span>
+              </div>
 
-          <button
-            onClick={onLogout}
-            className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
-            title="Log Out"
-          >
-            <LogOut size={16} />
-          </button>
+              <button
+                onClick={onLogout}
+                className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 transition"
+                title="Log Out"
+              >
+                <LogOut size={16} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={onOpenAuthModal}
+              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition"
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </header>
 
       {/* Main Dashboard Content */}
-      <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-8">
-        {/* Banner */}
-        <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white shadow-xl relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="relative z-10">
-            <span className="px-3 py-1 rounded-full bg-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-400/30">
-              Connected to Neon Cloud
-            </span>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-white mt-2">
-              Welcome back, {user?.name || "Presenter"}!
+      {!user ? (
+        <main className="max-w-md mx-auto p-6 my-16 text-center">
+          <div className="bg-white rounded-3xl p-8 border border-purple-100 shadow-xl space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mx-auto shadow-inner">
+              <Lock size={26} />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">
+              IMS Presenter Login Required
+            </h2>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Presentation creation, live studio controls, and slide deck management are strictly restricted to verified IMS organization members.
+            </p>
+            <button
+              onClick={onOpenAuthModal}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md transition"
+            >
+              Sign In / IMS Team Access
+            </button>
+          </div>
+        </main>
+      ) : (
+        <main className="max-w-6xl mx-auto p-6 md:p-8 space-y-8">
+          {/* Banner */}
+          <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white shadow-xl relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="relative z-10">
+              <span className="px-3 py-1 rounded-full bg-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-400/30">
+                IMS Presenter Studio
+              </span>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white mt-2">
+                Welcome back, {user?.name || "Presenter"}!
             </h2>
             <p className="text-xs md:text-sm text-purple-200/80 max-w-lg mt-1">
               Create, host, and monitor live presentations with interactive polls, quizzes, real-time transcription, and attendee analytics.
@@ -290,6 +325,7 @@ export default function DashboardView({
           )}
         </div>
       </main>
+      )}
 
       {/* Modal: New Presentation */}
       {showNewModal && (

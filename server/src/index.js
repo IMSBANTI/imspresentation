@@ -123,17 +123,15 @@ app.post('/api/auth/register', handleRegister);
 app.post('/api/auth/login', handleLogin);
 app.get('/api/auth/me', authMiddleware, handleGetMe);
 app.get('/api/auth/session', (req, res) => {
-  const guestUser = { id: 1, name: 'Presenter', email: 'presenter@imspresentation.com' };
-  const token = generateToken(guestUser);
-  res.json({ user: guestUser, token });
+  res.status(401).json({ authenticated: false, message: 'Please sign in with your IMS account.' });
 });
 
 // User Presentations Dashboard Routes
 app.get('/api/presentations', authMiddleware, async (req, res) => {
   try {
-    const userId = req.user?.id || 1;
+    const userId = req.user.id;
     const list = await getUserPresentations(userId);
-    const token = generateToken(req.user || { id: userId, name: 'Presenter' });
+    const token = generateToken(req.user);
     res.json({ presentations: list, token });
   } catch (e) {
     res.status(500).json({ error: e.message });

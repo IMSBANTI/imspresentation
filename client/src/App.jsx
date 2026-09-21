@@ -54,28 +54,12 @@ export default function App() {
     }
   }, []);
 
-  // Check user token or auto-initialize presenter session on mount
+  // Check user token on mount
   useEffect(() => {
     const token = localStorage.getItem('ims_token');
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     const room = params.get('room');
-
-    function initGuestSession() {
-      fetch('/api/auth/session')
-        .then((r) => r.ok ? r.json() : null)
-        .then((data) => {
-          if (data && data.token) {
-            localStorage.setItem('ims_token', data.token);
-            setUser(data.user);
-            refreshUserPresentations();
-            if (!view && !room) {
-              setViewMode('dashboard');
-            }
-          }
-        })
-        .catch(() => {});
-    }
 
     if (token && token !== 'null' && token !== 'undefined') {
       fetch('/api/auth/me', {
@@ -87,17 +71,28 @@ export default function App() {
             setUser(data.user);
             if (data.token) localStorage.setItem('ims_token', data.token);
             refreshUserPresentations();
-            // If logged in and no specific room/view requested in URL, go directly to Dashboard
             if (!view && !room) {
               setViewMode('dashboard');
             }
           } else {
-            initGuestSession();
+            localStorage.removeItem('ims_token');
+            setUser(null);
+            if (!view && !room) {
+              setShowAuthModal(true);
+            }
           }
         })
-        .catch(() => initGuestSession());
+        .catch(() => {
+          setUser(null);
+          if (!view && !room) {
+            setShowAuthModal(true);
+          }
+        });
     } else {
-      initGuestSession();
+      setUser(null);
+      if (!view && !room) {
+        setShowAuthModal(true);
+      }
     }
   }, []);
 
@@ -419,6 +414,7 @@ export default function App() {
           onLogout={handleLogout}
           onOpenStudio={handleLaunchStudioFromDashboard}
           onOpenStage={handleLaunchStageFromDashboard}
+          onOpenAuthModal={() => setShowAuthModal(true)}
           onOpenJoin={(code) => {
             setRoomId(code);
             setViewMode('audience');

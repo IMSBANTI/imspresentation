@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, User, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Lock, Mail, User, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function AuthModal({
   isOpen,
@@ -10,6 +10,7 @@ export default function AuthModal({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [imsCode, setImsCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +22,7 @@ export default function AuthModal({
     setLoading(true);
 
     const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-    const body = isRegister ? { email, password, name } : { email, password };
+    const body = isRegister ? { email, password, name, imsCode } : { email, password };
 
     try {
       const res = await fetch(endpoint, {
@@ -138,12 +139,38 @@ export default function AuthModal({
             )}
           </div>
 
+          {isRegister && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  IMS Organization Code
+                </label>
+                <span className="text-[10px] text-purple-700 font-bold bg-purple-100 px-1.5 py-0.5 rounded">
+                  IMS Team Only
+                </span>
+              </div>
+              <div className="relative">
+                <ShieldCheck size={15} className="absolute left-3.5 top-3 text-purple-600" />
+                <input
+                  type="text"
+                  value={imsCode}
+                  onChange={(e) => setImsCode(e.target.value)}
+                  placeholder="Enter IMS passcode (e.g. IMS2026 or use @ims email)"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 text-xs text-slate-800 outline-hidden transition"
+                />
+              </div>
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Required for presenters unless using a registered IMS corporate email.
+              </span>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-bold tracking-wide shadow-md transition flex items-center justify-center space-x-2 disabled:opacity-50"
           >
-            <span>{loading ? "Processing..." : (isRegister ? "Create Free Account" : "Sign In to Studio")}</span>
+            <span>{loading ? "Processing..." : (isRegister ? "Create IMS Presenter Account" : "Sign In to Studio")}</span>
             <ArrowRight size={14} />
           </button>
 
