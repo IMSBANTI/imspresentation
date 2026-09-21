@@ -1,14 +1,146 @@
-import React from 'react';
-import { Sliders, Lock, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sliders, Lock, HelpCircle, Palette, Check, Sparkles, Layers } from 'lucide-react';
+import { BACKGROUND_PRESETS, resolveSlideBackground } from '../utils/themeUtils';
 
 export default function PresentationOptions({
   options,
   onToggleOption,
+  currentSlide,
+  onChangeBackground
 }) {
+  const [customBg, setCustomBg] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const currentBg = currentSlide?.background || 'cosmic';
+  const resolved = resolveSlideBackground(currentBg);
+
+  const handleSelectPreset = (presetId, applyToAll = false) => {
+    if (onChangeBackground) {
+      onChangeBackground(presetId, applyToAll);
+      setSuccessMsg(applyToAll ? 'Applied to all slides!' : 'Background updated!');
+      setTimeout(() => setSuccessMsg(''), 2200);
+    }
+  };
+
+  const handleApplyCustom = (applyToAll = false) => {
+    if (!customBg.trim()) return;
+    if (onChangeBackground) {
+      onChangeBackground(customBg.trim(), applyToAll);
+      setSuccessMsg(applyToAll ? 'Custom background applied to all!' : 'Custom background applied!');
+      setTimeout(() => setSuccessMsg(''), 2200);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-purple-100 p-4 shadow-xs space-y-4">
-      {/* Interaction options */}
+      {/* 1. Slide & Presentation Background Theme */}
       <div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <Palette size={13} className="text-purple-600" />
+            <span>Slide Background Theme</span>
+          </div>
+          {successMsg && (
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 animate-fadeIn">
+              {successMsg}
+            </span>
+          )}
+        </div>
+
+        {/* Theme Color Palette Grid */}
+        <div className="grid grid-cols-4 gap-2 mb-2.5">
+          {BACKGROUND_PRESETS.map((preset) => {
+            const isSelected = 
+              currentBg === preset.id || 
+              currentBg === preset.className || 
+              (currentBg.includes(preset.id));
+
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handleSelectPreset(preset.id, false)}
+                className={`group relative h-9 rounded-xl overflow-hidden border transition transform active:scale-95 flex items-center justify-center ${
+                  isSelected 
+                    ? 'border-purple-600 ring-2 ring-purple-600/30 shadow-xs' 
+                    : 'border-slate-200 hover:border-purple-400 hover:shadow-xs'
+                }`}
+                style={{ background: preset.preview }}
+                title={preset.name}
+              >
+                {isSelected && (
+                  <div className="w-4 h-4 rounded-full bg-white/90 text-purple-700 flex items-center justify-center shadow-xs">
+                    <Check size={11} strokeWidth={3} />
+                  </div>
+                )}
+                <span className="absolute bottom-0 inset-x-0 bg-black/60 backdrop-blur-xs text-[8px] text-white font-medium truncate px-1 py-0.2 text-center opacity-0 group-hover:opacity-100 transition">
+                  {preset.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Background Action Controls */}
+        <div className="flex items-center space-x-2 text-xs">
+          <button
+            type="button"
+            onClick={() => handleSelectPreset(currentBg, true)}
+            className="flex-1 py-1.5 px-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-[11px] font-bold transition flex items-center justify-center space-x-1"
+            title="Apply current slide theme to all slides in this deck"
+          >
+            <Layers size={12} />
+            <span>Apply to All Slides</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowCustomInput(!showCustomInput)}
+            className="py-1.5 px-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-[11px] font-medium transition"
+          >
+            Custom...
+          </button>
+        </div>
+
+        {/* Custom CSS Color / Hex / Gradient input */}
+        {showCustomInput && (
+          <div className="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 animate-fadeIn">
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
+              Custom Hex or CSS Gradient
+            </span>
+            <div className="flex space-x-1.5">
+              <input
+                type="text"
+                value={customBg}
+                onChange={(e) => setCustomBg(e.target.value)}
+                placeholder="e.g. #0f172a or linear-gradient(...)"
+                className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/20 outline-hidden font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => handleApplyCustom(false)}
+                className="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] rounded-lg transition"
+              >
+                Apply
+              </button>
+            </div>
+            <div className="flex justify-between items-center text-[10px] text-slate-400">
+              <span>Supports hex colors (#111827) or CSS gradients</span>
+              <button
+                type="button"
+                onClick={() => handleApplyCustom(true)}
+                className="text-purple-600 hover:underline font-bold"
+              >
+                Apply to All
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Interaction options */}
+      <div className="pt-2 border-t border-slate-100">
         <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           <Sliders size={13} className="text-purple-600" />
           <span>Interaction options</span>
@@ -34,8 +166,8 @@ export default function PresentationOptions({
         </div>
       </div>
 
-      {/* Presentation options */}
-      <div>
+      {/* 3. Presentation options */}
+      <div className="pt-2 border-t border-slate-100">
         <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           <HelpCircle size={13} className="text-purple-600" />
           <span>Presentation options</span>

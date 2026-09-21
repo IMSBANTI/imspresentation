@@ -17,6 +17,7 @@ import {
 import confetti from 'canvas-confetti';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCodeModal from './QRCodeModal';
+import { resolveSlideBackground } from '../utils/themeUtils';
 
 export default function PresentationDisplay({
   presentation,
@@ -111,9 +112,13 @@ export default function PresentationDisplay({
   };
 
   const totalPollVotes = poll?.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0;
+  const resolvedBg = resolveSlideBackground(currentSlide?.background || presentation?.theme?.background);
 
   return (
-    <div className="fixed inset-0 bg-slate-950 text-white flex flex-col justify-between overflow-hidden select-none z-50">
+    <div 
+      className={`fixed inset-0 ${resolvedBg.className || 'bg-slate-950'} ${resolvedBg.isLight ? 'text-slate-900' : 'text-white'} flex flex-col justify-between overflow-hidden select-none z-50 transition-all duration-700`}
+      style={resolvedBg.style}
+    >
       {/* Background ambient lighting */}
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>

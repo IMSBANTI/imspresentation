@@ -118,6 +118,20 @@ export default function App() {
       setPresentation((prev) => prev ? { ...prev, currentSlideIndex } : prev);
     });
 
+    socket.on('slide-list-updated', ({ slides, currentSlideIndex, polls, quizzes, theme }) => {
+      setPresentation((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          slides,
+          currentSlideIndex: currentSlideIndex !== undefined ? currentSlideIndex : prev.currentSlideIndex,
+          ...(polls ? { polls } : {}),
+          ...(quizzes ? { quizzes } : {}),
+          ...(theme ? { theme } : {})
+        };
+      });
+    });
+
     socket.on('options-updated', (options) => {
       setPresentation((prev) => prev ? { ...prev, options } : prev);
     });
@@ -330,6 +344,17 @@ export default function App() {
     socket.emit('update-presentation-title', { roomId, title });
   };
 
+  const handleChangeBackground = (background, applyToAll = false) => {
+    const currentSlide = presentation?.slides?.[presentation.currentSlideIndex] || presentation?.slides?.[0];
+    socket.emit('update-slide-background', {
+      roomId,
+      slideIndex: presentation?.currentSlideIndex || 0,
+      slideId: currentSlide?.id,
+      background,
+      applyToAll
+    });
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('ims_token');
     setUser(null);
@@ -455,6 +480,7 @@ export default function App() {
           onUpdateTitle={handleUpdateTitle}
           userPresentations={userPresentations}
           onSwitchPresentation={handleSwitchPresentation}
+          onChangeBackground={handleChangeBackground}
         />
       )}
 

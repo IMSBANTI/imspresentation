@@ -40,6 +40,7 @@ export default function PresenterStudio({
   onUpdateTitle,
   userPresentations = [],
   onSwitchPresentation,
+  onChangeBackground,
 }) {
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [activeFeature, setActiveFeature] = useState('qa');
@@ -99,11 +100,13 @@ export default function PresenterStudio({
               />
             </div>
 
-            {/* Presentation Options switches */}
+            {/* Presentation Options switches & Background theme */}
             <div className="space-y-4">
               <PresentationOptions
                 options={presentation.options}
                 onToggleOption={onToggleOption}
+                currentSlide={currentSlide}
+                onChangeBackground={onChangeBackground}
               />
 
               {/* Real-time Subtitles / Audio Stream Control */}

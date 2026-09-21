@@ -1,5 +1,6 @@
 import React from 'react';
 import { Eye, ChevronLeft, ChevronRight, Maximize2, Mic, Sparkles } from 'lucide-react';
+import { resolveSlideBackground } from '../utils/themeUtils';
 
 export default function SlidePreview({
   slide,
@@ -19,6 +20,7 @@ export default function SlidePreview({
   };
 
   const totalPollVotes = poll?.options?.reduce((sum, opt) => sum + (opt.votes || 0), 0) || 0;
+  const resolvedBg = resolveSlideBackground(slide?.background);
 
   return (
     <div className="bg-white rounded-2xl border border-purple-100 p-4 shadow-xs flex flex-col">
@@ -50,7 +52,10 @@ export default function SlidePreview({
       </div>
 
       {/* Main Slide Canvas */}
-      <div className="relative aspect-video w-full rounded-xl bg-gradient-to-br from-slate-900 via-[#181135] to-purple-950 text-white p-4 sm:p-6 flex flex-col justify-between overflow-hidden shadow-md select-none">
+      <div 
+        className={`relative aspect-video w-full rounded-xl ${resolvedBg.className} ${resolvedBg.isLight ? 'text-slate-900' : 'text-white'} p-4 sm:p-6 flex flex-col justify-between overflow-hidden shadow-md select-none transition-all duration-500`}
+        style={resolvedBg.style}
+      >
         {/* Decorative ambient gradients */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>

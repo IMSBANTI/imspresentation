@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, BarChart2, HelpCircle, FileText, CheckCircle2, Trash2 } from 'lucide-react';
 import AddSlideModal from './AddSlideModal';
+import { resolveSlideBackground } from '../utils/themeUtils';
 
 export default function SlideNavigator({ 
   slides, 
@@ -93,10 +94,16 @@ export default function SlideNavigator({
               </div>
 
               {/* Thumbnail mini mock canvas */}
-              <div className="w-full h-16 rounded-lg bg-gradient-to-br from-slate-900 via-purple-950 to-indigo-950 p-2 flex flex-col justify-between overflow-hidden shadow-inner">
-                <p className="text-[10px] font-semibold text-white/90 line-clamp-2 leading-tight">
-                  {slide.title}
-                </p>
+              {(() => {
+                const thumbBg = resolveSlideBackground(slide.background);
+                return (
+                  <div 
+                    className={`w-full h-16 rounded-lg ${thumbBg.className} ${thumbBg.isLight ? 'text-slate-900' : 'text-white/90'} p-2 flex flex-col justify-between overflow-hidden shadow-inner transition-all duration-300`}
+                    style={thumbBg.style}
+                  >
+                    <p className="text-[10px] font-semibold line-clamp-2 leading-tight">
+                      {slide.title}
+                    </p>
                 {slide.layout === 'poll' && (
                   <div className="flex space-x-1 items-end h-4 opacity-80">
                     <div className="w-1/4 h-2 bg-purple-400 rounded-xs"></div>
@@ -120,7 +127,9 @@ export default function SlideNavigator({
                   <div className="w-8 h-1 bg-purple-400 rounded-full opacity-60"></div>
                 )}
               </div>
-            </div>
+            );
+          })()}
+        </div>
           );
         })}
       </div>

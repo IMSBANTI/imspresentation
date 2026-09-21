@@ -405,6 +405,37 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Update slide background theme
+  socket.on('update-slide-background', ({ roomId, slideIndex, slideId, background, applyToAll }) => {
+    const room = getOrCreateRoom(roomId);
+    if (!room.slides || room.slides.length === 0) return;
+
+    if (applyToAll) {
+      room.slides.forEach((s) => {
+        s.background = background;
+      });
+      room.theme = { ...(room.theme || {}), background };
+    } else {
+      let targetIndex = slideIndex;
+      if (slideId) {
+        const found = room.slides.findIndex((s) => s.id === slideId);
+        if (found >= 0) targetIndex = found;
+      }
+      if (targetIndex >= 0 && targetIndex < room.slides.length) {
+        room.slides[targetIndex].background = background;
+      }
+    }
+
+    io.to(roomId.toLowerCase()).emit('slide-list-updated', {
+      slides: room.slides,
+      currentSlideIndex: room.currentSlideIndex,
+      polls: room.polls,
+      quizzes: room.quizzes,
+      theme: room.theme
+    });
+    persistRooms(roomId);
+  });
+
   // Presentation option toggles
   socket.on('toggle-option', ({ roomId, key, value }) => {
     const room = getOrCreateRoom(roomId);
