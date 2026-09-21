@@ -8,7 +8,7 @@ import AuthModal from './components/AuthModal';
 import { Laptop, Tv, Smartphone, Layers } from 'lucide-react';
 
 export default function App() {
-  const [viewMode, setViewMode] = useState('studio'); // 'dashboard' | 'studio' | 'present' | 'audience'
+  const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard' | 'studio' | 'present' | 'audience'
   const [presentation, setPresentation] = useState(null);
   const [audienceCount, setAudienceCount] = useState(1);
   const [reactions, setReactions] = useState([]);
@@ -78,20 +78,20 @@ export default function App() {
             localStorage.removeItem('ims_token');
             setUser(null);
             if (!view && !room) {
-              setShowAuthModal(true);
+              setViewMode('dashboard');
             }
           }
         })
         .catch(() => {
           setUser(null);
           if (!view && !room) {
-            setShowAuthModal(true);
+            setViewMode('dashboard');
           }
         });
     } else {
       setUser(null);
       if (!view && !room) {
-        setShowAuthModal(true);
+        setViewMode('dashboard');
       }
     }
   }, []);
@@ -447,8 +447,8 @@ export default function App() {
         />
       )}
 
-      {/* VIEW: STUDIO */}
-      {viewMode === 'studio' && presentation && (
+      {/* VIEW: STUDIO (Protected: verified IMS users only) */}
+      {viewMode === 'studio' && user && presentation && (
         <PresenterStudio
           presentation={presentation}
           audienceCount={audienceCount}
@@ -481,6 +481,21 @@ export default function App() {
           userPresentations={userPresentations}
           onSwitchPresentation={handleSwitchPresentation}
           onChangeBackground={handleChangeBackground}
+        />
+      )}
+
+      {/* Fallback: If studio mode is requested without login, show IMS Presenter Login Required */}
+      {viewMode === 'studio' && !user && (
+        <DashboardView
+          user={null}
+          onLogout={handleLogout}
+          onOpenStudio={handleLaunchStudioFromDashboard}
+          onOpenStage={handleLaunchStageFromDashboard}
+          onOpenAuthModal={() => setShowAuthModal(true)}
+          onOpenJoin={(code) => {
+            setRoomId(code);
+            setViewMode('audience');
+          }}
         />
       )}
 

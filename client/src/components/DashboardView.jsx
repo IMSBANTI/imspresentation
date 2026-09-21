@@ -35,6 +35,7 @@ export default function DashboardView({
   const [templateChoice, setTemplateChoice] = useState('blank');
   const [creating, setCreating] = useState(false);
   const [qrModalPres, setQrModalPres] = useState(null);
+  const [joinCodeInput, setJoinCodeInput] = useState('');
 
   const fetchPresentations = async () => {
     try {
@@ -196,6 +197,37 @@ export default function DashboardView({
             >
               Sign In / IMS Team Access
             </button>
+
+            <div className="pt-5 border-t border-slate-100 text-left space-y-2">
+              <span className="text-[11px] font-bold text-slate-500 block text-center">
+                Joining a live presentation as an attendee?
+              </span>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (joinCodeInput.trim()) {
+                    const cleanCode = joinCodeInput.trim().replace(/^#/, '').toUpperCase();
+                    onOpenJoin(cleanCode);
+                  }
+                }}
+                className="flex items-center space-x-2"
+              >
+                <input
+                  type="text"
+                  value={joinCodeInput}
+                  onChange={(e) => setJoinCodeInput(e.target.value)}
+                  placeholder="Enter #CODE (e.g. PRES-123)"
+                  className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500 font-mono text-center uppercase"
+                />
+                <button
+                  type="submit"
+                  disabled={!joinCodeInput.trim()}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white font-bold text-xs shadow-xs transition"
+                >
+                  Join
+                </button>
+              </form>
+            </div>
           </div>
         </main>
       ) : (
