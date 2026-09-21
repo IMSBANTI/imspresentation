@@ -10,6 +10,7 @@ import LiveSubtitlesControl from './LiveSubtitlesControl';
 import AudienceMobile from './AudienceMobile';
 import ReportsModal from './ReportsModal';
 import QRCodeModal from './QRCodeModal';
+import FeatureModal from './FeatureModal';
 
 export default function PresenterStudio({
   presentation,
@@ -42,6 +43,7 @@ export default function PresenterStudio({
 }) {
   const [showMobilePreview, setShowMobilePreview] = useState(true);
   const [activeFeature, setActiveFeature] = useState('qa');
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
   const [showReportsModal, setShowReportsModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
@@ -169,6 +171,8 @@ export default function PresenterStudio({
                 setActiveFeature(feat);
                 if (feat === 'reports') {
                   setShowReportsModal(true);
+                } else {
+                  setShowFeatureModal(true);
                 }
               }}
               isListening={isListening}
@@ -177,6 +181,24 @@ export default function PresenterStudio({
           </aside>
         )}
       </div>
+
+      {/* Interactive Tool Suite Modal */}
+      <FeatureModal
+        isOpen={showFeatureModal}
+        activeFeature={activeFeature}
+        onClose={() => setShowFeatureModal(false)}
+        presentation={presentation}
+        audienceCount={audienceCount}
+        isListening={isListening}
+        onToggleListening={onToggleListening}
+        onSendTranscript={onSendTranscript}
+        onPinQuestion={onPinQuestion}
+        onAnswerQuestion={onAnswerQuestion}
+        onDeleteQuestion={onDeleteQuestion}
+        onUpvoteQuestion={onUpvoteQuestion}
+        onToggleOption={onToggleOption}
+        onToggleInteraction={onToggleInteraction}
+      />
 
       {/* Reports & Analytics Export Modal */}
       <ReportsModal
